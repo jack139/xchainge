@@ -15,11 +15,11 @@ import (
 
 /*
 	type TxReq struct {
+		ExchangerId string
+		AssetsId    string
+		Category    string
+		DataHash    string
 		UserId      string
-		FileHash    string
-		OldFileHash string
-		FileName    string
-		ReaderId    string
 		Action      byte  
 	}
 */
@@ -37,70 +37,21 @@ func (app *App) DeliverTx(req types.RequestDeliverTx) (rsp types.ResponseDeliver
 	}
 
 	switch m.Action {
-	case 0x01: // 新建文件
-		rsp.Log = "new file"
+	case 0x01, 0x02, 0x03, 0x04, 0x05: // 
+		rsp.Log = actionMessage[m.Action]
 
-		// 生成文件key
-		fileLinkKey := filePrefixKey(m.FileHash)
-		fileLinkValue := Int64ToByteArray(app.state.Height+1)
-
-		// 生成blcok链表key
-		blockLinkKey := blockPrefixKey(app.state.Height+1)		
-		blockLinkValue := FindKey(db, fileLinkKey)
-
-		// 添加到 db
-		AddKV(db, fileLinkKey, fileLinkValue) 
-		AddKV(db, blockLinkKey, blockLinkValue) 
-
-		// 生成用户key, 生成file_data
-		userFileKey := userPrefixKey(m.UserId, m.FileHash)
-		NewFileData(db, userFileKey, "", false)
-
-
-	case 0x02: // 浏览文件
-		rsp.Log = "view file"
-
-		// 生成文件key
-		fileLinkKey := filePrefixKey(m.FileHash)
-		fileLinkValue := Int64ToByteArray(app.state.Height+1)
+		// 生成资产key
+		assetsLinkKey := assetsPrefixKey(m.AssetsId)
+		assetsLinkValue := Int64ToByteArray(app.state.Height+1)
 
 		// 生成blcok链表key
 		blockLinkKey := blockPrefixKey(app.state.Height+1)		
-		blockLinkValue := FindKey(db, fileLinkKey)
+		blockLinkValue := FindKey(db, assetsLinkKey)
 
 		// 添加到 db
-		AddKV(db, fileLinkKey, fileLinkValue) 
+		AddKV(db, assetsLinkKey, assetsLinkValue) 
 		AddKV(db, blockLinkKey, blockLinkValue) 
 
-	case 0x03: // 修改文件
-		rsp.Log = "modify file"
-
-		// 生成新文件key
-		fileLinkKey := filePrefixKey(m.FileHash)
-		fileLinkValue := Int64ToByteArray(app.state.Height+1)
-
-		// 生成旧文件key
-		oldFileLinkKey := filePrefixKey(m.OldFileHash)
-
-		// 生成blcok链表key
-		blockLinkKey := blockPrefixKey(app.state.Height+1)		
-		blockLinkValue := FindKey(db, oldFileLinkKey)
-
-		// 添加到 db
-		AddKV(db, fileLinkKey, fileLinkValue) 
-		AddKV(db, blockLinkKey, blockLinkValue) 
-
-		// 生成用户key, 生成file_data
-		userFileKey := userPrefixKey(m.UserId, m.FileHash)
-		NewFileData(db, userFileKey, "", false)
-
-		// 修改旧文件file_data
-		oldUserFileKey := userPrefixKey(m.UserId, m.OldFileHash)
-		ModifyFileData(db, oldUserFileKey, true)
-
-
-	//case 0x04: // 删除文件
-	//	rsp.Log = "remove file"
 	default:
 		rsp.Log = "weird command"
 		rsp.Code = 2

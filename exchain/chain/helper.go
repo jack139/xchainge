@@ -23,18 +23,18 @@ func blockPrefixKey(height int64) []byte {
 	return append(blockLinkPrefixKey, Int64ToByteArray(height)...)
 }
 
-// 文件哈希表前缀
-func filePrefixKey(fileHash string) []byte {
-	return append(fileLinkPrefixKey, []byte(fileHash)...)
+// 资产表前缀
+func assetsPrefixKey(assetsId string) []byte {
+	return append(assetsLinkPrefixKey, []byte(assetsId)...)
 }
 
 
-// 用户文件表前缀
-func userPrefixKey(userId, fileHash string) []byte {
-	tmp := append(userFilePrefixKey, []byte(userId)...)
-	tmp = append(tmp, ':')
-	return append(tmp, []byte(fileHash)...)
-}
+//// 用户文件表前缀
+//func userPrefixKey(userId, fileHash string) []byte {
+//	tmp := append(userFilePrefixKey, []byte(userId)...)
+//	tmp = append(tmp, ':')
+//	return append(tmp, []byte(fileHash)...)
+//}
 
 
 // 初始化/链接db
@@ -102,12 +102,12 @@ func AddKV(db dbm.DB, key []byte, value []byte) error {
 }
 
 // 检查文件hash是否已存在
-func FileHashExisted(db dbm.DB, fileHash string) bool {
-	if len(FindKey(db, filePrefixKey(fileHash)))>0 {
-		return true
-	}
-	return false
-}
+//func FileHashExisted(db dbm.DB, fileHash string) bool {
+//	if len(FindKey(db, filePrefixKey(fileHash)))>0 {
+//		return true
+//	}
+//	return false
+//}
 
 
 /*
@@ -148,42 +148,42 @@ func ByteArrayToInt64(b []byte) int64 {
 
 
 // 生成file_data
-func NewFileData(db dbm.DB, userFileKey []byte, fileName string, modified bool) error {
-	fileData := FileData{
-		FileName: fileName,
-		Modified: modified,
-	}
-	fileBytes, err := json.Marshal(fileData)
-	if err != nil {
-		panic(err)
-	}
-
-	AddKV(db, userFileKey, fileBytes)
-
-	return nil
-}
+//func NewFileData(db dbm.DB, userFileKey []byte, fileName string, modified bool) error {
+//	fileData := FileData{
+//		FileName: fileName,
+//		Modified: modified,
+//	}
+//	fileBytes, err := json.Marshal(fileData)
+//	if err != nil {
+//		panic(err)
+//	}
+//
+//	AddKV(db, userFileKey, fileBytes)
+//
+//	return nil
+//}
 
 // 修改modified标志
-func ModifyFileData(db dbm.DB, oldUserFileKey []byte, modified bool) error {
-	oldFileByte := FindKey(db, oldUserFileKey)
-
-	var oldFileData FileData
-	err := json.Unmarshal(oldFileByte, &oldFileData)
-	if err != nil {
-		panic(err)
-	}
-
-	oldFileData.Modified = modified  // 修改标记
-
-	oldFileByte, err = json.Marshal(oldFileData)
-	if err != nil {
-		panic(err)
-	}
-
-	AddKV(db, oldUserFileKey, oldFileByte)
-
-	return nil
-}
+//func ModifyFileData(db dbm.DB, oldUserFileKey []byte, modified bool) error {
+//	oldFileByte := FindKey(db, oldUserFileKey)
+//
+//	var oldFileData FileData
+//	err := json.Unmarshal(oldFileByte, &oldFileData)
+//	if err != nil {
+//		panic(err)
+//	}
+//
+//	oldFileData.Modified = modified  // 修改标记
+//
+//	oldFileByte, err = json.Marshal(oldFileData)
+//	if err != nil {
+//		panic(err)
+//	}
+//
+//	AddKV(db, oldUserFileKey, oldFileByte)
+//
+//	return nil
+//}
 
 
 // 获取指定高度的区块内容

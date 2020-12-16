@@ -12,11 +12,20 @@ import (
 // 一些参数
 var (
 	stateKey        = []byte("stateKey")
-	fileLinkPrefixKey = []byte("fileLink:")
+	assetsLinkPrefixKey = []byte("assetsLink:")
 	blockLinkPrefixKey = []byte("blockLink:")
-	userFilePrefixKey = []byte("userFile:")
+	//userFilePrefixKey = []byte("userFile:")
 
 	ProtocolVersion uint64 = 0x1
+
+	actionMessage = []string{
+		"", 
+		"buy in", 
+		"buy out", 
+		"change owner", 
+		"authorization",
+		"query",
+	}
 )
 
 // 保存应用状态使用
@@ -39,26 +48,25 @@ type App struct {
 
 
 // 文件信息 - 用户文件表使用
-type FileData struct {
-	FileName    string `json:"fn"` // 文件名，可为空
-	Modified    bool `json:"is_mod"` // 文件是否已修改
-}
+//type FileData struct {
+//	FileName    string `json:"fn"` // 文件名，可为空
+//	Modified    bool `json:"is_mod"` // 文件是否已修改
+//}
 
 // 交易请求数据
 type TxReq struct {
-	UserId      string `json:"uid"` // 文件主的用户id
-	FileHash    string `json:"fhash"` // 文件hash
-	OldFileHash string `json:"ofhash"` // 旧文件的hash (如果 action==修改 需提供)
-	FileName    string `json:"fn"` // 文件名，可为空
-	ReaderId    string `json:"rid"` // 浏览文件的用户id （如果 action==浏览 需提供）
-	Action      byte   `json:"act"` // 0x01 文件建立， 0x02 文件浏览， 0x03 文件修改， 0x04 文件删除
+	ExchangerId string `json:"exid"` // 交易所id
+	AssetsId    string `json:"aid"` // 资产id
+	Category    string `json:"cat"` // 资产类别
+	DataHash    string `json:"dhash"` // 数据实体hash
+	UserId      string `json:"uid"` // 第三方用户id
+	Action      byte   `json:"act"` // 0x01 买入， 0x02 卖出， 0x03 变更所有权， 0x04 授权查询， 0x05 查询资产
 }
 
 // 查询请求数据
 type QueryReq struct {
-	UserId      string `json:"uid"` // 文件主的用户id，action==2时提供
-	FileHash    string `json:"fhash"` // 文件hash，action==1时提供
-	Action      byte   `json:"act"` // 0x01 查询文件历史, 0x02 查询用户的文件列表
+	Query      string `json:"query"` // 视act，含义不同： 资产id（0x01）, 交易所id（0x02）, 第三方用户id（0x03）
+	Action      byte   `json:"act"` // 0x01 查询资产历史, 0x02 查询交易所交易, 0x03 查询第三方用户交易
 }
 
 
