@@ -13,4 +13,6 @@
 
 *.pyc
 *.sum
-gotf
+bin/
+config/
+data/
