@@ -15,10 +15,13 @@ import (
 
 /*
 查询资产历史
-curl -g 'http://localhost:26657/abci_query?data="{\"query\":\"acbadbdc\",\"act\":1}"'
+curl -g 'http://localhost:26657/abci_query?data="{\"query\":\"abc\",\"act\":1}"'
 
 查询交易所历史
 curl -g 'http://localhost:26657/abci_query?data="{\"query\":\"1234\",\"act\":2}"'
+
+查询资产历史
+curl -g 'http://localhost:26657/abci_query?data="{\"query\":\"xxx\",\"act\":3}"'
 
 测试入口
 curl -g 'http://localhost:26657/abci_query?data="{\"act\":255}"'
@@ -38,14 +41,22 @@ func (app *App) Query(req types.RequestQuery) (rsp types.ResponseQuery) {
 	}
 
 	switch m.Action {
-	case 0x01: // 资产交易历史
-		rsp.Log = "assets history"
-
+	case 0x01, 0x03: // 资产交易历史， 用户交易历史
 		var respHistory []RespAssetsHistory
+		var linkKey []byte
+		var linkType string
 
 		// 文件key, 找到链头
-		assetsLinkKey := assetsPrefixKey(m.Query)
-		height := FindKey(db, assetsLinkKey)  // 这里 height 返回是 []byte
+		if m.Action==0x01{
+			rsp.Log = "assets history"
+			linkKey = assetsPrefixKey(m.Query)
+			linkType = "assets"
+		} else {
+			rsp.Log = "user history"
+			linkKey = userPrefixKey(m.Query)
+			linkType = "user"
+		}
+		height := FindKey(db, linkKey)  // 这里 height 返回是 []byte
 		for ;len(height)!=0; {
 			// 高度转换为int64
 			heightInt := ByteArrayToInt64(height)
@@ -68,7 +79,7 @@ func (app *App) Query(req types.RequestQuery) (rsp types.ResponseQuery) {
 			fmt.Println(heightInt, string(block.Data.Txs[0]))
 
 			// 在blcok链上找下一个
-			blockLinkKey := blockPrefixKey(heightInt)
+			blockLinkKey := blockPrefixKey(linkType, heightInt)
 			height = FindKey(db, blockLinkKey)
 		}
 
@@ -87,9 +98,9 @@ func (app *App) Query(req types.RequestQuery) (rsp types.ResponseQuery) {
 		high := app.state.Height // 链高度
 
 		/* 遍历整个链 */
-		for i:=int64(1);i<=high;i++ {
+		for i:=high;i>0;i-- {  //  从顶向下遍历
 			// 获取区块内容
-			block := GetBlock(i)			
+			block := GetBlock(i)
 
 			if len(block.Data.Txs)==0 {  // 忽略空块
 				continue
@@ -109,7 +120,7 @@ func (app *App) Query(req types.RequestQuery) (rsp types.ResponseQuery) {
 					BlockTime: block.Header.Time,
 				})
 
-				fmt.Println(i, string(block.Data.Txs[0]))				
+				fmt.Println(i, string(block.Data.Txs[0]))
 			}
 
 		}

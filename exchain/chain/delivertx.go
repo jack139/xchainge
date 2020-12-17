@@ -33,20 +33,9 @@ func (app *App) DeliverTx(req types.RequestDeliverTx) (rsp types.ResponseDeliver
 	case 0x01, 0x02, 0x03, 0x04, 0x05: // 
 		rsp.Log = actionMessage[m.Action]
 
-		// 生成资产key
-		assetsLinkKey := assetsPrefixKey(m.AssetsId)
-		assetsLinkValue := Int64ToByteArray(app.state.Height+1)
-
-		// 生成blcok链表key
-		blockLinkKey := blockPrefixKey(app.state.Height+1)		
-		blockLinkValue := FindKey(db, assetsLinkKey)
-
-		app.logger.Info("?", string(assetsLinkKey), assetsLinkValue)
-		app.logger.Info("?", string(blockLinkKey), blockLinkValue)
-
-		// 添加到 db
-		AddKV(db, assetsLinkKey, assetsLinkValue) 
-		AddKV(db, blockLinkKey, blockLinkValue) 
+		AddToLink(db, "assets", m.AssetsId, app.state.Height+1)
+		AddToLink(db, "user", m.UserId, app.state.Height+1)
+		//AddToLink(db, "exchanger", m.ExchangerId, app.state.Height+1)
 
 	default:
 		rsp.Log = "weird command"

@@ -12,8 +12,10 @@ import (
 // 一些参数
 var (
 	stateKey        = []byte("stateKey")
-	assetsLinkPrefixKey = []byte("assetsLink:")
 	blockLinkPrefixKey = []byte("blockLink:")
+	assetsLinkPrefixKey = []byte("assetsLink:")
+	userLinkPrefixKey = []byte("userLink:")
+	exhangerLinkPrefixKey = []byte("exLink:")
 
 	ProtocolVersion uint64 = 0x1
 

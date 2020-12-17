@@ -16,7 +16,7 @@ import (
 
 /*
 新建
-curl -g 'http://localhost:26657/broadcast_tx_commit?tx="{\"exid\":\"1234\",\"aid\":\"abc\",\"dhash\":\"abc\",\"act\":1}"'
+curl -g 'http://localhost:26657/broadcast_tx_commit?tx="{\"exid\":\"1234\",\"aid\":\"abc\",\"uid\":\"xxx\",\"dhash\":\"abc\",\"act\":1}"'
 */
 
 // 检查参数
@@ -29,7 +29,7 @@ func (app *App) isValid(tx []byte) error {
 	}
 
 	// 检查参数
-	if len(m.ExchangerId)==0 || len(m.AssetsId)==0 || len(m.DataHash)==0 || m.Action==0 { 
+	if len(m.ExchangerId)==0 || len(m.AssetsId)==0 || len(m.UserId)==0 || len(m.DataHash)==0 || m.Action==0 { 
 		return fmt.Errorf("bad parameters") // 参数问题
 	}
 

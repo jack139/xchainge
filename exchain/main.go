@@ -5,6 +5,10 @@ package main
 
 	编译：
 	go build -tags 'cleveldb' main.go
+
+	运行：
+	./exchain init --home n1
+	./exchain node --home n1 --consensus.create_empty_blocks=false
 */
 
 import (

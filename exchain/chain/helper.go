@@ -19,13 +19,19 @@ import (
 
 
 // 区块链表前缀
-func blockPrefixKey(height int64) []byte {
-	return append(blockLinkPrefixKey, Int64ToByteArray(height)...)
+func blockPrefixKey(linkType string, height int64) []byte {
+	/* 要按类型区分，否则同一区块的不同链表的链接信息会互相覆盖 */
+	t := append(blockLinkPrefixKey, []byte(linkType+":")...)
+	return append(t, Int64ToByteArray(height)...)
 }
 
 // 资产表前缀
 func assetsPrefixKey(assetsId string) []byte {
 	return append(assetsLinkPrefixKey, []byte(assetsId)...)
+}
+
+func userPrefixKey(userId string) []byte {
+	return append(userLinkPrefixKey, []byte(userId)...)
 }
 
 
@@ -145,4 +151,33 @@ func GetBlock(height int64) *types.Block{
 	}
 
 	return re.Block		
+}
+
+
+// 添加到链表
+func AddToLink(db dbm.DB, linkType string, keyContent string, height int64) {
+	var linkKey []byte
+
+	// 生成资产key
+	switch linkType {
+	case "assets":
+		linkKey = append(assetsLinkPrefixKey, []byte(keyContent)...)
+	case "user":
+		linkKey = append(userLinkPrefixKey, []byte(keyContent)...)
+	case "exchanger":
+		linkKey = append(exhangerLinkPrefixKey, []byte(keyContent)...)
+	default:
+		return
+	}
+	
+	// 值
+	linkValue := Int64ToByteArray(height)
+
+	// 生成blcok链表key
+	blockLinkKey := blockPrefixKey(linkType, height)		
+	blockLinkValue := FindKey(db, linkKey)
+
+	// 添加到 db
+	AddKV(db, linkKey, linkValue) 
+	AddKV(db, blockLinkKey, blockLinkValue) 
 }
