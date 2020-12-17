@@ -8,29 +8,20 @@ package chain
 
 import (
 	"encoding/json"
-	"bytes"
 	"fmt"
 
 	"github.com/tendermint/tendermint/abci/types"
 )
 
 /*
-	type QueryReq struct {
-		UserId      string `json:"user_id"` // 文件主的用户id，action==2时提供
-		FileHash    string `json:"file_hash"` // 文件hash，action==1时提供
-		Action      byte   `json:"action"` // 0x01 查询文件历史, 0x02 查询用户的文件列表
-	}
-*/
+查询资产历史
+curl -g 'http://localhost:26657/abci_query?data="{\"query\":\"acbadbdc\",\"act\":1}"'
 
-/*
-查询文件历史
-curl -g 'http://localhost:26657/abci_query?data="{\"fhash\":\"5678\",\"act\":1}"'
-
-查询用户文件
-curl -g 'http://localhost:26657/abci_query?data="{\"uid\":\"abc\",\"act\":2}"'
+查询交易所历史
+curl -g 'http://localhost:26657/abci_query?data="{\"query\":\"1234\",\"act\":2}"'
 
 测试入口
-curl -g 'http://localhost:26657/abci_query?data="{\"act\":3}"'
+curl -g 'http://localhost:26657/abci_query?data="{\"act\":255}"'
 */
 func (app *App) Query(req types.RequestQuery) (rsp types.ResponseQuery) {
 	app.logger.Info("Query()", "para", req.Data)
@@ -47,14 +38,14 @@ func (app *App) Query(req types.RequestQuery) (rsp types.ResponseQuery) {
 	}
 
 	switch m.Action {
-	case 0x01: // 文件历史
-		rsp.Log = "file history"
+	case 0x01: // 资产交易历史
+		rsp.Log = "assets history"
 
-		var respHistory []RespFileHistory
+		var respHistory []RespAssetsHistory
 
 		// 文件key, 找到链头
-		fileLinkKey := filePrefixKey(m.FileHash)
-		height := FindKey(db, fileLinkKey)  // 这里 height 返回是 []byte
+		assetsLinkKey := assetsPrefixKey(m.Query)
+		height := FindKey(db, assetsLinkKey)  // 这里 height 返回是 []byte
 		for ;len(height)!=0; {
 			// 高度转换为int64
 			heightInt := ByteArrayToInt64(height)
@@ -69,7 +60,7 @@ func (app *App) Query(req types.RequestQuery) (rsp types.ResponseQuery) {
 			}
 
 			// 添加到返回结果数组
-			respHistory = append(respHistory, RespFileHistory{
+			respHistory = append(respHistory, RespAssetsHistory{
 				TxRequest: txReq,
 				BlockTime: block.Header.Time,
 			})
@@ -88,55 +79,50 @@ func (app *App) Query(req types.RequestQuery) (rsp types.ResponseQuery) {
 		}
 		rsp.Value = respBytes
 
+	case 0x02: // 查询交易所的交易
+		rsp.Log = "exchanger history"
 
-	case 0x02: // 用户文件
-		rsp.Log = "user file list"
+		var respHistory []RespAssetsHistory
 
-		start := fmt.Sprintf("%s%s:", userFilePrefixKey, m.UserId)
-		end := fmt.Sprintf("%s\xff", start)
+		high := app.state.Height // 链高度
 
-		// 循环获取
-		itr, err := db.Iterator([]byte(start), []byte(end))
-		if err != nil {
-			panic(err)
-		}
+		/* 遍历整个链 */
+		for i:=int64(1);i<=high;i++ {
+			// 获取区块内容
+			block := GetBlock(i)			
 
-		var respUserFile []RespUserFile
-		for ; itr.Valid(); itr.Next() {
-			// 从key分解出用户id和文件hash
-			parts := bytes.Split(itr.Key(), []byte(":"))
-			if len(parts) != 3 {
-				panic("bad key format")
+			if len(block.Data.Txs)==0 {  // 忽略空块
+				continue
 			}
 
 			// 交易请求转为struct
-			var fileData FileData
-			err := json.Unmarshal(itr.Value(), &fileData)
+			var txReq TxReq
+			err := json.Unmarshal(block.Data.Txs[0], &txReq)
 			if err != nil {
 				panic(err)
 			}
-			//fmt.Println(fileData)
 
-			// 添加到返回结果数组
-			respUserFile = append(respUserFile, RespUserFile{
-				UserId: string(parts[1]),
-				FileName: fileData.FileName,
-				FileHash: string(parts[2]),
-				Modified: fileData.Modified,
-			})
+			if txReq.ExchangerId == m.Query {  // 是否相同交易所？
+				// 添加到返回结果数组
+				respHistory = append(respHistory, RespAssetsHistory{
+					TxRequest: txReq,
+					BlockTime: block.Header.Time,
+				})
 
-			fmt.Println(string(itr.Key()), "=", string(itr.Value()))
+				fmt.Println(i, string(block.Data.Txs[0]))				
+			}
+
 		}
 
 		// 返回结果转为json
-		respBytes, err := json.Marshal(respUserFile)
+		respBytes, err := json.Marshal(respHistory)
 		if err != nil {
 			panic(err)
 		}
 		rsp.Value = respBytes
 
 
-	case 0x03: // 测试
+	case 0xff: // 测试
 		rsp.Log = "test"
 
 	default:

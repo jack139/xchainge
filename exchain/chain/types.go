@@ -14,7 +14,6 @@ var (
 	stateKey        = []byte("stateKey")
 	assetsLinkPrefixKey = []byte("assetsLink:")
 	blockLinkPrefixKey = []byte("blockLink:")
-	//userFilePrefixKey = []byte("userFile:")
 
 	ProtocolVersion uint64 = 0x1
 
@@ -47,12 +46,6 @@ type App struct {
 }
 
 
-// 文件信息 - 用户文件表使用
-//type FileData struct {
-//	FileName    string `json:"fn"` // 文件名，可为空
-//	Modified    bool `json:"is_mod"` // 文件是否已修改
-//}
-
 // 交易请求数据
 type TxReq struct {
 	ExchangerId string `json:"exid"` // 交易所id
@@ -60,26 +53,21 @@ type TxReq struct {
 	Category    string `json:"cat"` // 资产类别
 	DataHash    string `json:"dhash"` // 数据实体hash
 	UserId      string `json:"uid"` // 第三方用户id
-	Action      byte   `json:"act"` // 0x01 买入， 0x02 卖出， 0x03 变更所有权， 0x04 授权查询， 0x05 查询资产
+	Action      byte   `json:"act"` // 0x01 买入， 0x02 卖出， 0x03 变更所有权， 
+									// 0x04 授权查询， 0x05 查询资产
 }
 
 // 查询请求数据
 type QueryReq struct {
-	Query      string `json:"query"` // 视act，含义不同： 资产id（0x01）, 交易所id（0x02）, 第三方用户id（0x03）
-	Action      byte   `json:"act"` // 0x01 查询资产历史, 0x02 查询交易所交易, 0x03 查询第三方用户交易
+	Query  string `json:"query"` // 视act，含义不同： 资产id（0x01）, 交易所id（0x02）, 
+								 //第三方用户id（0x03）
+	Action byte   `json:"act"`  // 0x01 查询资产历史, 0x02 查询交易所交易, 
+								// 0x03 查询第三方用户交易
 }
 
 
-// query返回： 文件历史
-type RespFileHistory struct {
+// query返回： 0x01 资产历史
+type RespAssetsHistory struct {
 	TxRequest TxReq `json:"tx_data"`
 	BlockTime time.Time `json:"time"` 
-}
-
-// query返回： 用户文件
-type RespUserFile struct {
-	UserId      string `json:"user_id"` 
-	FileName    string `json:"filename"`
-	FileHash    string `json:"file_hash"` 
-	Modified    bool `json:"is_modified"` 
 }

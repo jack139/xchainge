@@ -15,24 +15,12 @@ import (
 
 
 /*
-	type TxReq struct {
-		ExchangerId string
-		AssetsId    string
-		Category    string
-		DataHash    string
-		UserId      string
-		Action      byte  
-	}
-*/
-
-/*
 新建
 curl -g 'http://localhost:26657/broadcast_tx_commit?tx="{\"exid\":\"1234\",\"aid\":\"abc\",\"dhash\":\"abc\",\"act\":1}"'
 */
 
 // 检查参数
 func (app *App) isValid(tx []byte) error {
-	db := app.state.db
 	var m TxReq
 
 	err := json.Unmarshal(tx, &m)

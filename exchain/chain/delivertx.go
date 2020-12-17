@@ -14,14 +14,7 @@ import (
 
 
 /*
-	type TxReq struct {
-		ExchangerId string
-		AssetsId    string
-		Category    string
-		DataHash    string
-		UserId      string
-		Action      byte  
-	}
+	提交区块
 */
 func (app *App) DeliverTx(req types.RequestDeliverTx) (rsp types.ResponseDeliverTx) {
 	app.logger.Info("DeliverTx()", "para", req.Tx)
@@ -47,6 +40,9 @@ func (app *App) DeliverTx(req types.RequestDeliverTx) (rsp types.ResponseDeliver
 		// 生成blcok链表key
 		blockLinkKey := blockPrefixKey(app.state.Height+1)		
 		blockLinkValue := FindKey(db, assetsLinkKey)
+
+		app.logger.Info("?", string(assetsLinkKey), assetsLinkValue)
+		app.logger.Info("?", string(blockLinkKey), blockLinkValue)
 
 		// 添加到 db
 		AddKV(db, assetsLinkKey, assetsLinkValue) 
