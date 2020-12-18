@@ -37,6 +37,7 @@
 {
 	"type":"deal", // 交易
 	"value":{
+		"ID":"", // 资产交易ID
 		"Assets":"K1kY3yTfSwW9lphr5RzjLw==", // 资产ID
 		"Exchange":"P1ABCkAph4DQlnEMahGW6I2mfOOtfZKYyssOZ4L8MTc=", // 交易所ID（公钥）
 		"Data":"", // 加密交易数据 （IPFS HASH）
@@ -51,6 +52,7 @@
 {
 	"type":"auth", // 查询授权（授权其他交易所查看某资产），查询记录（只记录被授权方的查询动作）
 	"value":{
+		"ID":"", // 授权操作ID
 		"Assets":"K1kY3yTfSwW9lphr5RzjLw==", // 资产ID
 		"FromExchange":"P1ABCkAph4DQlnEMahGW6I2mfOOtfZKYyssOZ4L8MTc=", // 授权交易所ID（公钥）
 		"ToExchange":"P1ABCkAph4DQlnEMahGW6I2mfOOtfZKYyssOZ4L8MTc=", // 被授权交易所ID（公钥）

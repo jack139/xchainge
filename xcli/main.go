@@ -15,87 +15,96 @@ var (
 		Short: "xchainge client",
 		Long:  "xcli is a client tool for xchainge",
 	}
-	throwCmd = &cobra.Command{
-		Use:   "throw",
-		Short: "throw a bottle",
+	dealCmd = &cobra.Command{	// 上链操作
+		Use:   "deal",
+		Short: "make a deal",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) < 5 {
+				return errors.New("need more parameters")
+			}
+			action := args[0]
+			assetsId := args[1]
+			exchangeId := args[2]
+			data := args[3]
+			refer := args[4]
+			return me.deal(action, assetsId, exchangeId, data, refer)
+		},
+	}
+	authCmd = &cobra.Command{	// 上链操作
+		Use:   "auth",
+		Short: "query auth",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) < 5 {
+				return errors.New("need more parameters")
+			}
+			action := args[0]
+			assetsId := args[1]
+			fromExchangeId := args[2]
+			toExchangeId := args[3]
+			refer := args[4]
+			return me.auth(action, assetsId, fromExchangeId, toExchangeId, refer)
+		},
+	}
+
+	generateKeyCmd = &cobra.Command{	// 生成密钥文件
+		Use:   "generate",
+		Short: "generate exchange key file",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return me.generateKey()
+		},
+	}
+
+	queryExchangeCmd = &cobra.Command{	// 查询 交易所 交易历史
+		Use:   "queryExchange",
+		Short: "query deals' history of exchange",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return errors.New("you should put one message in this bottle")
+				return errors.New("need more parameters")
 			}
-			content := args[0]
-			return me.throwBottle(content)
+			exchangeId := args[0]
+			return me.query("exchange", exchangeId)
 		},
 	}
-	getMyBottlesCmd = &cobra.Command{
-		Use:   "mybottles",
-		Short: "get all bottles I thrown",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return me.getMyBottles()
-		},
-	}
-	getBottleCmd = &cobra.Command{
-		Use:   "bottle",
-		Short: "get a bottle",
+
+	queryAssetsCmd = &cobra.Command{	// 查询 资产 交易历史
+		Use:   "queryAssets",
+		Short: "query deals' history of Assets",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return errors.New("miss bottle uuid")
+				return errors.New("need more parameters")
 			}
-			bid := args[0]
-			me.getBottle(bid)
-			return nil
+			assetsId := args[0]
+			return me.query("assets", assetsId)
 		},
 	}
-	salvageCmd = &cobra.Command{
-		Use:   "salvage",
-		Short: "salvage a bottle",
-		Run: func(cmd *cobra.Command, args []string) {
-			me.salvage()
-		},
-	}
-	getMessageOfBottleCmd = &cobra.Command{
-		Use:   "msgofbottle",
-		Short: "get messages in a bottle",
-		Run: func(cmd *cobra.Command, args []string) {
+
+	queryReferCmd = &cobra.Command{	// 查询 Refer 交易历史
+		Use:   "queryRefer",
+		Short: "query deals' history of Refer",
+		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				fmt.Println("miss some arguments")
+				return errors.New("need more parameters")
 			}
-			bid := args[0]
-			mid, _ := cmd.Flags().GetUint16("mid")
-			me.getMessageOfBottle(bid, mid)
+			refer := args[0]
+			return me.query("refer", refer)
 		},
 	}
-	replyCmd = &cobra.Command{
-		Use:   "reply",
-		Short: "reply to otherside",
-		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) == 0 {
-				fmt.Println("miss some arguments")
-			}
-			bid := args[0]
-			content, _ := cmd.Flags().GetString("content")
-			me.reply(bid, content)
-		},
-	}
+
 )
 
 func init() {
-	user, err := loadOrGenUserKey()
+	user, err := loadUserKeyFile()
 	if err != nil {
 		panic(err)
 	}
 	me = user
 
-	//rootCmd.PersistentFlags().String("nodekeyfile", "", "设置节点私钥存储路径")
-	rootCmd.AddCommand(throwCmd)
-	rootCmd.AddCommand(getMyBottlesCmd)
-	rootCmd.AddCommand(getBottleCmd)
-	rootCmd.AddCommand(salvageCmd)
-
-	getMessageOfBottleCmd.Flags().Uint16("mid", 0, "要获取瓶中的第几条消息")
-	rootCmd.AddCommand(getMessageOfBottleCmd)
-
-	replyCmd.Flags().StringP("content", "c", "", "给瓶子的那一头回个消息")
-	rootCmd.AddCommand(replyCmd)
+	rootCmd.AddCommand(dealCmd)
+	rootCmd.AddCommand(authCmd)
+	rootCmd.AddCommand(queryExchangeCmd)
+	rootCmd.AddCommand(queryAssetsCmd)
+	rootCmd.AddCommand(queryReferCmd)
+	rootCmd.AddCommand(generateKeyCmd)	
 }
 
 func main() {

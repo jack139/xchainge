@@ -24,7 +24,7 @@ import (
 )
 
 // KEYFILENAME 私钥文件名
-const KEYFILENAME string = ".userkey"
+const KEYFILENAME string = "exchange.key"
 
 var (
 	cli *rpcclient.HTTP
@@ -48,15 +48,9 @@ type user struct {
 	bottleIDs  []string       // 投放的所有漂流瓶id集合
 }
 
-func loadOrGenUserKey() (*user, error) {
-	if cmn.FileExists(KEYFILENAME) {
-		uk, err := loadUserKey()
-		if err != nil {
-			return nil, err
-		}
-		return uk, nil
-	}
-	//fmt.Println("userkey file not exists")
+
+// 生成 keyfile
+func GenUserKey() (*user, error) {
 	uk := new(user)
 	uk.SignKey = ed25519.GenPrivKey()
 	pubKey, priKey, err := box.GenerateKey(crypto_rand.Reader)
@@ -73,6 +67,19 @@ func loadOrGenUserKey() (*user, error) {
 		return nil, err
 	}
 	return uk, nil
+}
+
+// 从文件装入key
+func loadUserKeyFile() (*user, error) {
+	if cmn.FileExists(KEYFILENAME) {
+		uk, err := loadUserKey()
+		if err != nil {
+			return nil, err
+		}
+		return uk, nil
+	}
+	//fmt.Println("userkey file not exists")
+	return nil, fmt.Errorf("Error: key file '%v' not exists", KEYFILENAME)
 }
 
 func loadUserKey() (*user, error) {
@@ -251,7 +258,7 @@ func (me *user) getMessageOfBottle(bottleID string, mid uint16) {
 }
 
 // 回消息，加密
-func (me *user) reply(bottleID, msg string) {
+func (me *user) deal(action, assetsId, exchangeId, data, refer string) {
 	bottle := me.getBottle(bottleID)
 	if bottle == nil {
 		fmt.Println("wrong bottle ~")
