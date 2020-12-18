@@ -17,7 +17,51 @@
 
 ### 交易链请求
 
-1. 交易请求
+1. 交易内容
+```json
+{
+	"Signature":"SXKaVqfAe5ypHpz1qM3tQTYa42F9JQoq4zwMYQLKN0E0s+nViVk2Z3b98mFXvTHnqRCFousPVCYdR7b+d21jCg==",
+	"SendTime":"2020-12-18T05:36:00.281914675Z",
+	"SignPubKey":{
+			"type":"ed25519/pubkey",
+			"value":"yaeWs6Y5a0djpvnShNwq+zZdeJmN9I+nrddWMMH+3Uo="
+	},
+	"Payload":{
+		// 详见下
+	}
+}
+```
+
+2. 资产交易 payload
+```json
+{
+	"type":"deal", // 交易
+	"value":{
+		"Assets":"K1kY3yTfSwW9lphr5RzjLw==", // 资产ID
+		"Exchange":"P1ABCkAph4DQlnEMahGW6I2mfOOtfZKYyssOZ4L8MTc=", // 交易所ID（公钥）
+		"Data":"", // 加密交易数据 （IPFS HASH）
+		"Refer":"abc", // 用于索引（例如，可以存放第三方用户id）
+		"Action":1, // 0x01 买入， 0x02 卖出， 0x03 变更所有权
+	}
+}
+```
+
+3. 查询授权 payload
+```json
+{
+	"type":"auth", // 查询授权（授权其他交易所查看某资产），查询记录（只记录被授权方的查询动作）
+	"value":{
+		"Assets":"K1kY3yTfSwW9lphr5RzjLw==", // 资产ID
+		"FromExchange":"P1ABCkAph4DQlnEMahGW6I2mfOOtfZKYyssOZ4L8MTc=", // 授权交易所ID（公钥）
+		"ToExchange":"P1ABCkAph4DQlnEMahGW6I2mfOOtfZKYyssOZ4L8MTc=", // 被授权交易所ID（公钥）
+		"Refer":"abc", // 用于索引（例如，可以存放第三方用户id）
+		"Action":4, // 0x04 授权查询， 0x05 查询资产， 0x06 取消授权查询
+	}
+}
+```
+
+
+4. 交易请求（deprecated）
 
 ```json
 {
@@ -30,7 +74,7 @@
 }
 ```
 
-2. 查询请求
+5. 查询请求
 
 ```json
 {
