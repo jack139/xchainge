@@ -7,12 +7,12 @@ package main
 	go build -tags 'cleveldb' main.go
 
 	运行：
-	./exchain init --home n1
-	./exchain node --home n1 --consensus.create_empty_blocks=false
+	./xchain init --home n1
+	./xchain node --home n1 --consensus.create_empty_blocks=false
 */
 
 import (
-	"exchain/chain"
+	"xchain/chain"
 
 	"github.com/tendermint/tendermint/cmd/tendermint/commands"
 	cfg "github.com/tendermint/tendermint/config"

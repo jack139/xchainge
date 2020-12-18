@@ -1,4 +1,4 @@
-OUTPUT=exchain
+OUTPUT=xchain
 
 BUILD_TAGS=cleveldb
 LD_FLAGS=

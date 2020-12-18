@@ -1,4 +1,4 @@
-module exchain
+module xchain
 
 go 1.15
 

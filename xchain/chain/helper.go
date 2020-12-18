@@ -39,10 +39,10 @@ func userPrefixKey(userId string) []byte {
 func InitDB(rootDir string) dbm.DB {
 	// 生成数据文件路径, 放在 --home 目录下的 data 下
 	dbDir := path.Join(rootDir, "data")
-	//fmt.Println("exchain.db path: ", dbDir)
+	//fmt.Println("xchain.db path: ", dbDir)
 
 	// 初始化数据库
-	db, err := dbm.NewCLevelDB("exchain", dbDir)  
+	db, err := dbm.NewCLevelDB("xchain", dbDir)  
 	if err != nil {
 		panic(err)
 	}
