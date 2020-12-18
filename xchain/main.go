@@ -12,7 +12,7 @@ package main
 */
 
 import (
-	"xchain/chain"
+	"xchainge/xchain/chain"
 
 	"github.com/tendermint/tendermint/cmd/tendermint/commands"
 	cfg "github.com/tendermint/tendermint/config"
