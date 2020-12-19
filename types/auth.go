@@ -15,7 +15,7 @@ type Auth struct {
 	ID             uuid.UUID
 	AssetsID       []byte //资产ID
 	FromExchangeID [32]byte //交易所的加密公钥
-	ToExchangeID   [32]byte //交易所的加密公钥
+	ToExchangeID   [32]byte //被授权的交易所的加密公钥
 	Refer          []byte // 参考字符串，用于索引
 	Action         byte // 0x04 授权查询， 0x05 查询资产， 0x06 取消授权查询
 }

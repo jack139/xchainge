@@ -1,6 +1,8 @@
 package main
 
 import (
+	"xchainge/xcli/client"
+
 	"errors"
 	"fmt"
 	"os"
@@ -9,7 +11,7 @@ import (
 )
 
 var (
-	me      *user
+	me      *client.user
 	rootCmd = &cobra.Command{
 		Use:   "xcli",
 		Short: "xchainge client",
@@ -19,44 +21,34 @@ var (
 		Use:   "deal",
 		Short: "make a deal",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) < 5 {
+			if len(args) < 4 {
 				return errors.New("need more parameters")
 			}
 			action := args[0]
 			assetsId := args[1]
-			exchangeId := args[2]
-			data := args[3]
-			refer := args[4]
-			return me.deal(action, assetsId, exchangeId, data, refer)
+			data := args[2]
+			refer := args[3]
+			return me.deal(action, assetsId, data, refer)
 		},
 	}
 	authCmd = &cobra.Command{	// 上链操作
 		Use:   "auth",
 		Short: "query auth",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) < 5 {
+			if len(args) < 4 {
 				return errors.New("need more parameters")
 			}
 			action := args[0]
 			assetsId := args[1]
-			fromExchangeId := args[2]
-			toExchangeId := args[3]
-			refer := args[4]
-			return me.auth(action, assetsId, fromExchangeId, toExchangeId, refer)
-		},
-	}
-
-	generateKeyCmd = &cobra.Command{	// 生成密钥文件
-		Use:   "generate",
-		Short: "generate exchange key file",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return me.generateKey()
+			toExchangeId := args[2]
+			refer := args[3]
+			return me.auth(action, assetsId, toExchangeId, refer)
 		},
 	}
 
 	queryExchangeCmd = &cobra.Command{	// 查询 交易所 交易历史
 		Use:   "queryExchange",
-		Short: "query deals' history of exchange",
+		Short: "query deals' history of exchange, '_' for local exchange",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
 				return errors.New("need more parameters")
@@ -93,7 +85,7 @@ var (
 )
 
 func init() {
-	user, err := loadUserKeyFile()
+	user, err := client.loadOrGenUserKey()
 	if err != nil {
 		panic(err)
 	}
@@ -104,7 +96,6 @@ func init() {
 	rootCmd.AddCommand(queryExchangeCmd)
 	rootCmd.AddCommand(queryAssetsCmd)
 	rootCmd.AddCommand(queryReferCmd)
-	rootCmd.AddCommand(generateKeyCmd)	
 }
 
 func main() {
