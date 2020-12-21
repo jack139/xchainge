@@ -32,7 +32,7 @@ func (app *App) isValidDeal(deal *types.Deal) error {
 	case 0x01, 0x02, 0x03: 
 		{}
 	default:
-		return fmt.Errorf("weird command")
+		return fmt.Errorf("weird deal command")
 	}
 
 	return nil
@@ -51,7 +51,7 @@ func (app *App) isValidAuth(auth *types.Auth) error {
 	case 0x04, 0x05, 0x06: 
 		{}
 	default:
-		return fmt.Errorf("weird command")
+		return fmt.Errorf("weird auth command")
 	}
 
 	return nil
@@ -93,7 +93,7 @@ func (app *App) CheckTx(req tmtypes.RequestCheckTx) (rsp tmtypes.ResponseCheckTx
 
 	if err!=nil {
 		rsp.Log = err.Error()
-		rsp.Code = 1
+		rsp.Code = 4
 		app.logger.Info("CheckTx() fail", "reason", rsp.Log)
 	} else {
 		rsp.GasWanted = 1

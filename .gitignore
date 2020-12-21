@@ -17,3 +17,4 @@ bin/
 config/
 data/
 build/
+*.key

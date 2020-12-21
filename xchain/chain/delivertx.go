@@ -9,7 +9,6 @@ package chain
 import (
 	"xchainge/types"
 
-	"fmt"
 	tmtypes "github.com/tendermint/tendermint/abci/types"
 )
 
@@ -22,7 +21,7 @@ func (app *App) DeliverTx(req tmtypes.RequestDeliverTx) (rsp tmtypes.ResponseDel
 
 	db := app.state.db
 	raw := req.Tx
-	fmt.Println(string(raw))
+	//fmt.Println(string(raw))
 
 	var tx types.Transx
 	cdc.UnmarshalJSON(raw, &tx) //由于之前CheckTx中转换过，所以这里按道理不会有error
@@ -34,8 +33,7 @@ func (app *App) DeliverTx(req tmtypes.RequestDeliverTx) (rsp tmtypes.ResponseDel
 		case 0x01, 0x02, 0x03:
 			rsp.Log = actionMessage[deal.Action]
 
-			var exchangeID []byte
-			copy(exchangeID[:], deal.ExchangeID[:])
+			exchangeID, _ := cdc.MarshalJSON(deal.ExchangeID)
 
 			// 完善链表
 			AddToLink(db, "exchange", exchangeID, app.state.Height+1)

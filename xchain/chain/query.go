@@ -19,8 +19,8 @@ import (
 
 const (
 	// 匹配如下格式
-	// /userpubkey/query/category/content
-	queryPathPattern string = `^/((?P<uk>\S+)/query/(?P<cate>\S+)/(?P<content>\S+)?)$`
+	// /userpubkey/query/category
+	queryPathPattern string = `^/((?P<uk>\S+)/query/(?P<cate>\S+)?)$`
 )
 
 func getMatchMap(submatches []string, groupNames []string) map[string]string {
@@ -35,16 +35,13 @@ func getMatchMap(submatches []string, groupNames []string) map[string]string {
 
 /*
 查询资产历史
-curl -g 'http://localhost:26657/abci_query?data="{\"query\":\"abc\",\"act\":1}"'
+/"qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs="/query/assets
 
 查询交易所历史
-curl -g 'http://localhost:26657/abci_query?data="{\"query\":\"1234\",\"act\":2}"'
+curl -g 'http://localhost:26657/qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=/query/exchange'
 
-查询资产历史
-curl -g 'http://localhost:26657/abci_query?data="{\"query\":\"xxx\",\"act\":3}"'
-
-测试入口
-curl -g 'http://localhost:26657/abci_query?data="{\"act\":255}"'
+查询refer历史
+/"qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs="/query/refer
 */
 func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 	app.logger.Info("Query()", "para", req.Data)
@@ -55,16 +52,18 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 	reg := regexp.MustCompile(queryPathPattern)
 	submatches := reg.FindStringSubmatch(req.Path)
 	groupNames := reg.SubexpNames()
+	//fmt.Println(submatches, groupNames)
 	matchmap := getMatchMap(submatches, groupNames)
 
 	// 解码 exchangeId (公钥)
-	var exchangeId []byte
-	err := cdc.UnmarshalJSON([]byte(matchmap["uk"]), &exchangeId)
-	if err != nil {
-		rsp.Code = 1
-		rsp.Log = err.Error()
-		return
-	}
+	exchangeId := []byte(matchmap["uk"])
+	//var exchangeId []byte
+	//err := cdc.UnmarshalJSON([]byte(matchmap["uk"]), &exchangeId)
+	//if err != nil {
+	//	rsp.Code = 1
+	//	rsp.Log = err.Error()
+	//	return
+	//}
 
 	if matchmap["cate"] == "" {
 		rsp.Log = "no category"
@@ -76,17 +75,28 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 		var respHistory []RespAssetsHistory
 		var linkKey []byte
 		var linkType string
+		var qData *[]byte
+
+		if string(req.Data)=="_" {  //  查询自己的交易记录
+			qData = &exchangeId
+		} else {
+			// TODO 检查授权
+			qData = &req.Data
+		}
+
+		fmt.Printf("--> %s\n", *qData)
 
 		// 文件key, 找到链头
 		if matchmap["cate"]=="assets" {
 			rsp.Log = "assets history"
-			linkKey = assetsPrefixKey(req.Data)
+			linkKey = assetsPrefixKey(*qData)
 			linkType = "assets"
 		} else {
 			rsp.Log = "exhcange history"
-			linkKey = exhcangePrefixKey(req.Data)
+			linkKey = exhcangePrefixKey(*qData)
 			linkType = "exchange"
 		}
+
 		height := FindKey(db, linkKey)  // 这里 height 返回是 []byte
 		for ;len(height)!=0; {
 			// 高度转换为int64
@@ -103,7 +113,7 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 				BlockTime: block.Header.Time,
 			})
 
-			fmt.Println(heightInt, string(block.Data.Txs[0]))
+			fmt.Println(heightInt)
 
 			// 在blcok链上找下一个
 			blockLinkKey := blockPrefixKey(linkType, heightInt)
@@ -145,6 +155,7 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 				auth, _ := tx.Payload.(*types.Auth)	// 授权
 				refer = auth.Refer
 			}
+
 			res := bytes.Compare(refer, req.Data)
 			if res==0 {  // 是否相同refer
 				// 添加到返回结果数组
@@ -153,7 +164,7 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 					BlockTime: block.Header.Time,
 				})
 
-				fmt.Println(i, string(block.Data.Txs[0]))
+				fmt.Println(i)
 			}
 
 		}

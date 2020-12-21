@@ -193,7 +193,7 @@ func (me *User) Query(category, queryContent string) error {
 	}
 
 	data := rsp.Response.Value
-	fmt.Println(data)
+	fmt.Printf("resp => %s\n", data)
 
 	return nil
 }
