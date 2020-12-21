@@ -36,12 +36,15 @@ func getMatchMap(submatches []string, groupNames []string) map[string]string {
 /*
 查询资产历史
 /"qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs="/query/assets
+curl -g 'http://localhost:26657/abci_query?data="123"&path="/\"qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=\"/query/assets"'
 
 查询交易所历史
-curl -g 'http://localhost:26657/qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=/query/exchange'
+/"qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs="/query/exchange
+curl -g 'http://localhost:26657/abci_query?data="_"&path="/\"qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=\"/query/exchange"'
 
 查询refer历史
 /"qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs="/query/refer
+curl -g 'http://localhost:26657/abci_query?data="yyy"&path="/\"qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=\"/query/refer"'
 */
 func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 	app.logger.Info("Query()", "para", req.Data)
@@ -53,17 +56,14 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 	submatches := reg.FindStringSubmatch(req.Path)
 	groupNames := reg.SubexpNames()
 	//fmt.Println(submatches, groupNames)
+	if len(submatches)!=len(groupNames) {
+		rsp.Log = "path error"
+		return		
+	}
 	matchmap := getMatchMap(submatches, groupNames)
 
-	// 解码 exchangeId (公钥)
+	// 解码 exchangeId (公钥)，序列化文本
 	exchangeId := []byte(matchmap["uk"])
-	//var exchangeId []byte
-	//err := cdc.UnmarshalJSON([]byte(matchmap["uk"]), &exchangeId)
-	//if err != nil {
-	//	rsp.Code = 1
-	//	rsp.Log = err.Error()
-	//	return
-	//}
 
 	if matchmap["cate"] == "" {
 		rsp.Log = "no category"
