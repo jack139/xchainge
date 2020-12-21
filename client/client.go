@@ -1,22 +1,21 @@
 package client
 
 import (
+	"xchainge"
+	"xchainge/types"
+
 	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
-	//"strconv"
+	"strconv"
 	"time"
 	"context"
-	"xchainge"
-	"xchainge/types"
+	crypto_rand "crypto/rand"
 
 	cfg "github.com/tendermint/tendermint/config"
 	cmn "github.com/tendermint/tendermint/libs/os"
 	rpcclient "github.com/tendermint/tendermint/rpc/client/http"
-
-	crypto_rand "crypto/rand"
-
 	uuid "github.com/satori/go.uuid"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
@@ -42,14 +41,14 @@ type cryptoPair struct {
 	PubKey  *[32]byte
 }
 
-type user struct {
+type User struct {
 	SignKey    crypto.PrivKey `json:"sign_key"` // 节点私钥，用户签名
 	CryptoPair cryptoPair     // 密钥协商使用
 }
 
 
 // 从文件装入key
-func loadOrGenUserKey() (*user, error) {
+func LoadOrGenUserKey() (*User, error) {
 	if cmn.FileExists(KEYFILENAME) {
 		uk, err := loadUserKey()
 		if err != nil {
@@ -58,7 +57,7 @@ func loadOrGenUserKey() (*user, error) {
 		return uk, nil
 	}
 	//fmt.Println("userkey file not exists")
-	uk := new(user)
+	uk := new(User)
 	uk.SignKey = ed25519.GenPrivKey()
 	pubKey, priKey, err := box.GenerateKey(crypto_rand.Reader)
 	if err != nil {
@@ -76,13 +75,13 @@ func loadOrGenUserKey() (*user, error) {
 	return uk, nil
 }
 
-func loadUserKey() (*user, error) {
+func loadUserKey() (*User, error) {
 	//copy(privKey[:], bz)
 	jsonBytes, err := ioutil.ReadFile(KEYFILENAME)
 	if err != nil {
 		return nil, err
 	}
-	uk := new(user)
+	uk := new(User)
 	err = cdc.UnmarshalJSON(jsonBytes, uk)
 	if err != nil {
 		return nil, fmt.Errorf("Error reading UserKey from %v: %v", KEYFILENAME, err)
@@ -92,7 +91,7 @@ func loadUserKey() (*user, error) {
 
 
 // 交易上链，数据加密
-func (me *user) deal(action, assetsId, data, refer string) {
+func (me *User) Deal(action, assetsId, data, refer string) error {
 	// 交易所id
 	exchangeId := *me.CryptoPair.PubKey
 
@@ -109,6 +108,7 @@ func (me *user) deal(action, assetsId, data, refer string) {
 	now := time.Now()
 	tx := new(types.Transx)
 	tx.SendTime = &now
+	action0, _ := strconv.Atoi(action)
 
 	deal := types.Deal{
 		ID:         uuid.NewV4(),
@@ -116,7 +116,7 @@ func (me *user) deal(action, assetsId, data, refer string) {
 		ExchangeID: exchangeId,
 		Data:       encrypted,
 		Refer:      []byte(refer),
-		Action:     byte(action),
+		Action:     byte(action0),
 	}
 
 	tx.Payload = &deal
@@ -140,7 +140,7 @@ func (me *user) deal(action, assetsId, data, refer string) {
 }
 
 // 授权操作 上链
-func (me *user) auth(action, assetsId, toExchangeId, refer string) error {
+func (me *User) Auth(action, assetsId, toExchangeId, refer string) error {
 	now := time.Now()
 	tx := new(types.Transx)
 	tx.SendTime = &now
@@ -149,9 +149,10 @@ func (me *user) auth(action, assetsId, toExchangeId, refer string) error {
 	auth.ID = uuid.NewV4()
 	auth.AssetsID = []byte(assetsId)
 	auth.FromExchangeID = *me.CryptoPair.PubKey
-	auth.ToExchangeID = [32]byte(toExchangeId)
+	copy(auth.ToExchangeID[:], ([]byte(toExchangeId))[:32])
 	auth.Refer = []byte(refer)
-	auth.Action = byte(action)
+	action0, _ := strconv.Atoi(action)
+	auth.Action = byte(action0)
 
 	tx.Payload = auth
 
@@ -174,19 +175,18 @@ func (me *user) auth(action, assetsId, toExchangeId, refer string) error {
 }
 
 // 链上查询
-func (me *user) query(category, queryContent string) error {
+func (me *User) Query(category, queryContent string) error {
 	addr, _ := cdc.MarshalJSON(*me.CryptoPair.PubKey)
 
 	//addr = addr[1 : len(addr)-1] // 移除两边的引号
 	var buf bytes.Buffer
 	buf.WriteString("/")
 	buf.Write(addr)
-	buf.WriteString("/query")
-	buf.WriteString("/")
-	buf.WriteString(category)  // TODO: 检查category合法值
+	buf.WriteString("/query/")
+	buf.WriteString(category)
 	//获得拼接后的字符串
 	path := buf.String()
-	rsp, err := cli.ABCIQuery(ctx, path, nil)
+	rsp, err := cli.ABCIQuery(ctx, path, []byte(queryContent))
 	if err != nil {
 		fmt.Println(err)
 		return err

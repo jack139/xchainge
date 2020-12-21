@@ -1,7 +1,17 @@
 package main
 
+/*
+	主程序：
+
+	编译：
+	go build main.go
+
+	运行：
+	./xcli
+*/
+
 import (
-	"xchainge/xcli/client"
+	"xchainge/client"
 
 	"errors"
 	"fmt"
@@ -11,7 +21,7 @@ import (
 )
 
 var (
-	me      *client.user
+	me      *client.User
 	rootCmd = &cobra.Command{
 		Use:   "xcli",
 		Short: "xchainge client",
@@ -28,7 +38,7 @@ var (
 			assetsId := args[1]
 			data := args[2]
 			refer := args[3]
-			return me.deal(action, assetsId, data, refer)
+			return me.Deal(action, assetsId, data, refer)
 		},
 	}
 	authCmd = &cobra.Command{	// 上链操作
@@ -42,7 +52,7 @@ var (
 			assetsId := args[1]
 			toExchangeId := args[2]
 			refer := args[3]
-			return me.auth(action, assetsId, toExchangeId, refer)
+			return me.Auth(action, assetsId, toExchangeId, refer)
 		},
 	}
 
@@ -54,7 +64,7 @@ var (
 				return errors.New("need more parameters")
 			}
 			exchangeId := args[0]
-			return me.query("exchange", exchangeId)
+			return me.Query("exchange", exchangeId)
 		},
 	}
 
@@ -66,7 +76,7 @@ var (
 				return errors.New("need more parameters")
 			}
 			assetsId := args[0]
-			return me.query("assets", assetsId)
+			return me.Query("assets", assetsId)
 		},
 	}
 
@@ -78,14 +88,14 @@ var (
 				return errors.New("need more parameters")
 			}
 			refer := args[0]
-			return me.query("refer", refer)
+			return me.Query("refer", refer)
 		},
 	}
 
 )
 
 func init() {
-	user, err := client.loadOrGenUserKey()
+	user, err := client.LoadOrGenUserKey()
 	if err != nil {
 		panic(err)
 	}

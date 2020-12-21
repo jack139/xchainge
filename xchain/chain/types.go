@@ -2,9 +2,11 @@ package chain
 
 
 import (
-	"time"
+	"xchainge"
+	"xchainge/types"
 
-	"github.com/tendermint/tendermint/abci/types"
+	"time"
+	tmtypes "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 )
@@ -14,8 +16,8 @@ var (
 	stateKey        = []byte("stateKey")
 	blockLinkPrefixKey = []byte("blockLink:")
 	assetsLinkPrefixKey = []byte("assetsLink:")
-	userLinkPrefixKey = []byte("userLink:")
-	exhangerLinkPrefixKey = []byte("exLink:")
+	referLinkPrefixKey = []byte("referLink:")
+	exhangeLinkPrefixKey = []byte("exLink:")
 
 	ProtocolVersion uint64 = 0x1
 
@@ -27,6 +29,8 @@ var (
 		"authorization",
 		"query",
 	}
+
+	cdc = xchainge.AminoCdc
 )
 
 // 保存应用状态使用
@@ -39,7 +43,7 @@ type State struct {
 
 // 应用的结构
 type App struct {
-	types.BaseApplication
+	tmtypes.BaseApplication
 
 	state State
 	RetainBlocks int64 // blocks to retain after commit (via ResponseCommit.RetainHeight)
@@ -70,6 +74,6 @@ type QueryReq struct {
 
 // query返回： 0x01 资产历史
 type RespAssetsHistory struct {
-	TxRequest TxReq `json:"tx_data"`
+	TxRequest types.Transx `json:"tx_data"`
 	BlockTime time.Time `json:"time"` 
 }

@@ -7,11 +7,31 @@ package chain
 
 
 import (
+	"xchainge/types"
+
 	"encoding/json"
 	"fmt"
-
-	"github.com/tendermint/tendermint/abci/types"
+	"regexp"
+	"bytes"
+	tmtypes "github.com/tendermint/tendermint/abci/types"
 )
+
+
+const (
+	// 匹配如下格式
+	// /userpubkey/query/category/content
+	queryPathPattern string = `^/((?P<uk>\S+)/query/(?P<cate>\S+)/(?P<content>\S+)?)$`
+)
+
+func getMatchMap(submatches []string, groupNames []string) map[string]string {
+	result := make(map[string]string)
+	for i, name := range groupNames {
+		if i != 0 && name != "" {
+			result[name] = submatches[i]
+		}
+	}
+	return result
+}
 
 /*
 查询资产历史
@@ -26,35 +46,46 @@ curl -g 'http://localhost:26657/abci_query?data="{\"query\":\"xxx\",\"act\":3}"'
 测试入口
 curl -g 'http://localhost:26657/abci_query?data="{\"act\":255}"'
 */
-func (app *App) Query(req types.RequestQuery) (rsp types.ResponseQuery) {
+func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 	app.logger.Info("Query()", "para", req.Data)
 
 	db := app.state.db
 
-	var m QueryReq
+	fmt.Println(req.Path)
+	reg := regexp.MustCompile(queryPathPattern)
+	submatches := reg.FindStringSubmatch(req.Path)
+	groupNames := reg.SubexpNames()
+	matchmap := getMatchMap(submatches, groupNames)
 
-	err := json.Unmarshal(req.Data, &m)
+	// 解码 exchangeId (公钥)
+	var exchangeId []byte
+	err := cdc.UnmarshalJSON([]byte(matchmap["uk"]), &exchangeId)
 	if err != nil {
-		rsp.Log = "bad json format"
 		rsp.Code = 1
+		rsp.Log = err.Error()
 		return
 	}
 
-	switch m.Action {
-	case 0x01, 0x03: // 资产交易历史， 用户交易历史
+	if matchmap["cate"] == "" {
+		rsp.Log = "no category"
+		return
+	}
+
+	switch matchmap["cate"] {
+	case "assets", "exchange": // 资产交易历史， 交易所交易历史
 		var respHistory []RespAssetsHistory
 		var linkKey []byte
 		var linkType string
 
 		// 文件key, 找到链头
-		if m.Action==0x01{
+		if matchmap["cate"]=="assets" {
 			rsp.Log = "assets history"
-			linkKey = assetsPrefixKey(m.Query)
+			linkKey = assetsPrefixKey(req.Data)
 			linkType = "assets"
 		} else {
-			rsp.Log = "user history"
-			linkKey = userPrefixKey(m.Query)
-			linkType = "user"
+			rsp.Log = "exhcange history"
+			linkKey = exhcangePrefixKey(req.Data)
+			linkType = "exchange"
 		}
 		height := FindKey(db, linkKey)  // 这里 height 返回是 []byte
 		for ;len(height)!=0; {
@@ -63,16 +94,12 @@ func (app *App) Query(req types.RequestQuery) (rsp types.ResponseQuery) {
 			// 获取区块内容
 			block := GetBlock(heightInt)
 
-			// 交易请求转为struct
-			var txReq TxReq
-			err := json.Unmarshal(block.Data.Txs[0], &txReq)
-			if err != nil {
-				panic(err)
-			}
+			var tx types.Transx
+			cdc.UnmarshalJSON(block.Data.Txs[0], &tx)
 
 			// 添加到返回结果数组
 			respHistory = append(respHistory, RespAssetsHistory{
-				TxRequest: txReq,
+				TxRequest: tx,
 				BlockTime: block.Header.Time,
 			})
 
@@ -90,8 +117,8 @@ func (app *App) Query(req types.RequestQuery) (rsp types.ResponseQuery) {
 		}
 		rsp.Value = respBytes
 
-	case 0x02: // 查询交易所的交易
-		rsp.Log = "exchanger history"
+	case "refer": // refer参考值的交易 （全库遍历）
+		rsp.Log = "refer history"
 
 		var respHistory []RespAssetsHistory
 
@@ -107,16 +134,22 @@ func (app *App) Query(req types.RequestQuery) (rsp types.ResponseQuery) {
 			}
 
 			// 交易请求转为struct
-			var txReq TxReq
-			err := json.Unmarshal(block.Data.Txs[0], &txReq)
-			if err != nil {
-				panic(err)
-			}
+			var tx types.Transx
+			cdc.UnmarshalJSON(block.Data.Txs[0], &tx)
 
-			if txReq.ExchangerId == m.Query {  // 是否相同交易所？
+			var refer []byte
+			deal, ok := tx.Payload.(*types.Deal)	// 交易
+			if ok {
+				refer = deal.Refer
+			} else {
+				auth, _ := tx.Payload.(*types.Auth)	// 授权
+				refer = auth.Refer
+			}
+			res := bytes.Compare(refer, req.Data)
+			if res==0 {  // 是否相同refer
 				// 添加到返回结果数组
 				respHistory = append(respHistory, RespAssetsHistory{
-					TxRequest: txReq,
+					TxRequest: tx,
 					BlockTime: block.Header.Time,
 				})
 
@@ -131,10 +164,6 @@ func (app *App) Query(req types.RequestQuery) (rsp types.ResponseQuery) {
 			panic(err)
 		}
 		rsp.Value = respBytes
-
-
-	case 0xff: // 测试
-		rsp.Log = "test"
 
 	default:
 		rsp.Log = "weird command"

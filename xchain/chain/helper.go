@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"strconv"
 	"path"
-
 	"github.com/tendermint/tendermint/types"
 	rpctypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
 	rpc "github.com/tendermint/tendermint/rpc/core"
@@ -26,12 +25,16 @@ func blockPrefixKey(linkType string, height int64) []byte {
 }
 
 // 资产表前缀
-func assetsPrefixKey(assetsId string) []byte {
-	return append(assetsLinkPrefixKey, []byte(assetsId)...)
+func assetsPrefixKey(assetsId []byte) []byte {
+	return append(assetsLinkPrefixKey, assetsId...)
 }
 
-func userPrefixKey(userId string) []byte {
-	return append(userLinkPrefixKey, []byte(userId)...)
+func exhcangePrefixKey(exhcange []byte) []byte {
+	return append(exhangeLinkPrefixKey, exhcange...)
+}
+
+func referPrefixKey(refer []byte) []byte {
+	return append(referLinkPrefixKey, refer...)
 }
 
 
@@ -155,17 +158,17 @@ func GetBlock(height int64) *types.Block{
 
 
 // 添加到链表
-func AddToLink(db dbm.DB, linkType string, keyContent string, height int64) {
+func AddToLink(db dbm.DB, linkType string, keyContent []byte, height int64) {
 	var linkKey []byte
 
 	// 生成资产key
 	switch linkType {
+	case "exchange":
+		linkKey = exhcangePrefixKey(keyContent)
 	case "assets":
-		linkKey = append(assetsLinkPrefixKey, []byte(keyContent)...)
-	case "user":
-		linkKey = append(userLinkPrefixKey, []byte(keyContent)...)
-	case "exchanger":
-		linkKey = append(exhangerLinkPrefixKey, []byte(keyContent)...)
+		linkKey = assetsPrefixKey(keyContent)
+	case "refer":
+		linkKey = referPrefixKey(keyContent)
 	default:
 		return
 	}

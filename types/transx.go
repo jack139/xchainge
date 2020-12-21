@@ -2,7 +2,6 @@ package types
 
 import (
 	"time"
-
 	"github.com/tendermint/tendermint/crypto"
 )
 
