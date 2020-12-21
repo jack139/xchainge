@@ -140,8 +140,18 @@ func (me *User) Deal(action, assetsId, data, refer string) error {
 }
 
 // 授权操作 上链
+// xcli auth 4 234 j9cIgmm17x0aLApf0i20UR7Pj34Ua/JwyWOuBGgYIFg= yyy
 func (me *User) Auth(action, assetsId, toExchangeId, refer string) error {
 	now := time.Now()
+
+	// 检查 toExchangeId 合理性
+	var toExchangeIdBytes [32]byte
+	err := cdc.UnmarshalJSON([]byte("\""+toExchangeId+"\""), &toExchangeIdBytes) // 反序列化时需要双引号，因为是字符串
+	if err != nil {
+		return err
+	}
+
+	// 新建交易
 	tx := new(types.Transx)
 	tx.SendTime = &now
 
@@ -149,7 +159,7 @@ func (me *User) Auth(action, assetsId, toExchangeId, refer string) error {
 	auth.ID = uuid.NewV4()
 	auth.AssetsID = []byte(assetsId)
 	auth.FromExchangeID = *me.CryptoPair.PubKey
-	copy(auth.ToExchangeID[:], ([]byte(toExchangeId))[:32])
+	auth.ToExchangeID = toExchangeIdBytes
 	auth.Refer = []byte(refer)
 	action0, _ := strconv.Atoi(action)
 	auth.Action = byte(action0)

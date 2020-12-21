@@ -17,4 +17,6 @@ bin/
 config/
 data/
 build/
-*.key
+user*/
+
+levelcli

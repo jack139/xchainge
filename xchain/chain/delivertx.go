@@ -40,7 +40,7 @@ func (app *App) DeliverTx(req tmtypes.RequestDeliverTx) (rsp tmtypes.ResponseDel
 			AddToLink(db, "assets", deal.AssetsID, app.state.Height+1)
 
 		default:
-			rsp.Log = "weird command"
+			rsp.Log = "weird deal command"
 			rsp.Code = 2
 		}
 	} else {
@@ -50,16 +50,15 @@ func (app *App) DeliverTx(req tmtypes.RequestDeliverTx) (rsp tmtypes.ResponseDel
 			case 0x04, 0x05, 0x06:
 				rsp.Log = actionMessage[auth.Action]
 
-				var exchangeID []byte
-				copy(exchangeID[:], auth.FromExchangeID[:])
+				exchangeID, _ := cdc.MarshalJSON(auth.FromExchangeID)
 
 				// 完善链表
 				AddToLink(db, "exchange", exchangeID, app.state.Height+1)
 				AddToLink(db, "assets", auth.AssetsID, app.state.Height+1)
 
 			default:
-				rsp.Log = "weird command"
-				rsp.Code = 2
+				rsp.Log = "weird auth command"
+				rsp.Code = 3
 			}
 		}
 	}
