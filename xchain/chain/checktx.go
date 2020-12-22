@@ -14,11 +14,6 @@ import (
 )
 
 
-/*
-新建
-curl -g 'http://localhost:26657/broadcast_tx_commit?tx="{\"exid\":\"1234\",\"aid\":\"abc\",\"uid\":\"xxx\",\"dhash\":\"abc\",\"act\":1}"'
-*/
-
 // 检查交易
 func (app *App) isValidDeal(deal *types.Deal) error {
 	m := *deal
@@ -57,6 +52,9 @@ func (app *App) isValidAuth(auth *types.Auth) error {
 	return nil
 }
 
+/*
+	检查交易
+*/
 func (app *App) CheckTx(req tmtypes.RequestCheckTx) (rsp tmtypes.ResponseCheckTx) {
 	app.logger.Info("CheckTx()", "para", req.Tx)
 

@@ -5,7 +5,6 @@ package chain
 */
 
 
-
 import (
 	"xchainge/types"
 
@@ -14,17 +13,13 @@ import (
 
 
 /*
-	提交区块
+	提交区块，主要业务逻辑放这里（没做实际事情， 其实检查已经在 checkTx 中做了）
 */
 func (app *App) DeliverTx(req tmtypes.RequestDeliverTx) (rsp tmtypes.ResponseDeliverTx) {
 	app.logger.Info("DeliverTx()", "para", req.Tx)
 
-	db := app.state.db
-	raw := req.Tx
-	//fmt.Println(string(raw))
-
 	var tx types.Transx
-	cdc.UnmarshalJSON(raw, &tx) //由于之前CheckTx中转换过，所以这里按道理不会有error
+	cdc.UnmarshalJSON(req.Tx, &tx) //由于之前CheckTx中转换过，所以这里按道理不会有error
 
 	// 数据上链
 	deal, ok := tx.Payload.(*types.Deal)	// 交易
@@ -32,12 +27,7 @@ func (app *App) DeliverTx(req tmtypes.RequestDeliverTx) (rsp tmtypes.ResponseDel
 		switch deal.Action {
 		case 0x01, 0x02, 0x03:
 			rsp.Log = actionMessage[deal.Action]
-
-			exchangeID, _ := cdc.MarshalJSON(deal.ExchangeID)
-
-			// 完善链表
-			AddToLink(db, "exchange", exchangeID, app.state.Height+1)
-			AddToLink(db, "assets", deal.AssetsID, app.state.Height+1)
+			// 业务逻辑放这里
 
 		default:
 			rsp.Log = "weird deal command"
@@ -49,12 +39,7 @@ func (app *App) DeliverTx(req tmtypes.RequestDeliverTx) (rsp tmtypes.ResponseDel
 			switch auth.Action {
 			case 0x04, 0x05, 0x06:
 				rsp.Log = actionMessage[auth.Action]
-
-				exchangeID, _ := cdc.MarshalJSON(auth.FromExchangeID)
-
-				// 完善链表
-				AddToLink(db, "exchange", exchangeID, app.state.Height+1)
-				AddToLink(db, "assets", auth.AssetsID, app.state.Height+1)
+				// 业务逻辑放这里
 
 			default:
 				rsp.Log = "weird auth command"
@@ -68,3 +53,40 @@ func (app *App) DeliverTx(req tmtypes.RequestDeliverTx) (rsp tmtypes.ResponseDel
 	return
 }
 
+/*
+	结束区块生成，此处更新链表
+*/
+func (app *App) EndBlock(req tmtypes.RequestEndBlock) (rsp tmtypes.ResponseEndBlock) {
+	app.logger.Info("EndBlock()", "height", req.Height)
+
+	db := app.state.db
+	block := GetBlock(req.Height)
+
+	if len(block.Data.Txs)==0 {
+		return
+	}
+
+	var tx types.Transx
+	cdc.UnmarshalJSON(block.Data.Txs[0], &tx)
+
+	// 更新链表， 放这里，确保height的数据准确
+	deal, ok := tx.Payload.(*types.Deal)	// 交易
+	if ok {
+		exchangeID, _ := cdc.MarshalJSON(deal.ExchangeID)
+
+		// 完善链表
+		AddToLink(db, "exchange", exchangeID, req.Height)
+		AddToLink(db, "assets", deal.AssetsID, req.Height)
+	} else {
+		auth, ok := tx.Payload.(*types.Auth)	// 授权
+		if ok {
+			exchangeID, _ := cdc.MarshalJSON(auth.FromExchangeID)
+
+			// 完善链表
+			AddToLink(db, "exchange", exchangeID, req.Height)
+			AddToLink(db, "assets", auth.AssetsID, req.Height)
+		}
+	}
+
+	return
+}

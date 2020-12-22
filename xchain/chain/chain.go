@@ -50,9 +50,9 @@ func (app *App) Commit() (rsp types.ResponseCommit) {
 	saveState(app.state)
 
 	resp := types.ResponseCommit{Data: appHash}
-	if app.RetainBlocks > 0 && app.state.Height >= app.RetainBlocks {
-		resp.RetainHeight = app.state.Height - app.RetainBlocks + 1
-	}
+	//if app.RetainBlocks > 0 && app.state.Height >= app.RetainBlocks {
+	//	resp.RetainHeight = app.state.Height - app.RetainBlocks + 1
+	//}
 	return resp
 }
 

@@ -19,8 +19,9 @@ type Transx struct {
 	Payload    IPayload
 }
 
-/*Sign 给消息签名
-privKey:发送方私钥
+/*
+	Sign 给消息签名
+	privKey:发送方私钥
 */
 func (cmu *Transx) Sign(privKey crypto.PrivKey) error {
 	bz := cmu.Payload.getSignBytes()
@@ -29,8 +30,13 @@ func (cmu *Transx) Sign(privKey crypto.PrivKey) error {
 	return err
 }
 
-// Verify 校验消息是否未被篡改
+/*
+	Verify 校验消息是否未被篡改
+*/
 func (cmu *Transx) Verify() bool {
+	if cmu.Payload==nil { // Transx 格式不对
+		return false
+	}
 	data := cmu.Payload.getSignBytes()
 	sig := cmu.Signature
 	rslt := cmu.SignPubKey.VerifySignature(data, sig)
