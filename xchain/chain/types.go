@@ -21,12 +21,11 @@ var (
 
 	actionMessage = []string{
 		"", 
-		"buy in", 
-		"buy out", 
-		"change owner", 
-		"authorization",
-		"query",
-		"deauthorization",
+		"Buy in", 
+		"Sell", 
+		"Change of ownership", 
+		"Request authorization",
+		"Respond to authorization",
 	}
 
 	cdc = types.AminoCdc

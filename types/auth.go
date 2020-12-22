@@ -11,13 +11,15 @@ const (
 )
 
 // 授权操作
+// ToExchangeID 请求 FromExchangeID 授权，指定 DealID，进入 FromExchangeID 的链表
+// FromExchangeID 加密数据 Data 后 返回 ToExchangeID，进入 ToExchangeID 的链表
 type Auth struct {
 	ID             uuid.UUID
-	AssetsID       []byte //资产ID
-	FromExchangeID [32]byte //交易所的加密公钥
-	ToExchangeID   [32]byte //被授权的交易所的加密公钥
-	Refer          []byte // 参考字符串，用于索引
-	Action         byte // 0x04 授权查询， 0x05 查询资产， 0x06 取消授权查询
+	DealID         uuid.UUID // 交易ID
+	FromExchangeID [32]byte // 交易所的加密公钥
+	ToExchangeID   [32]byte // 被授权的交易所的加密公钥
+	Data           []byte // FromExchange加密数据，被授权者ToExchangeID可以解密
+	Action         byte // 0x04 请求授权， 0x05 响应授权
 }
 
 // GetKey 获取实体键
