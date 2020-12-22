@@ -2,7 +2,6 @@ package chain
 
 
 import (
-	"xchainge"
 	"xchainge/types"
 
 	"time"
@@ -30,7 +29,7 @@ var (
 		"query",
 	}
 
-	cdc = xchainge.AminoCdc
+	cdc = types.AminoCdc
 )
 
 // 保存应用状态使用

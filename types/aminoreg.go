@@ -1,8 +1,6 @@
-package xchainge
+package types
 
 import (
-	"xchainge/types"
-
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
@@ -12,9 +10,9 @@ import (
 var AminoCdc = amino.NewCodec()
 
 func init() {
-	AminoCdc.RegisterInterface((*types.IPayload)(nil), nil)
-	AminoCdc.RegisterConcrete(&types.Deal{}, "deal", nil)
-	AminoCdc.RegisterConcrete(&types.Auth{}, "auth", nil)
+	AminoCdc.RegisterInterface((*IPayload)(nil), nil)
+	AminoCdc.RegisterConcrete(&Deal{}, "deal", nil)
+	AminoCdc.RegisterConcrete(&Auth{}, "auth", nil)
 	AminoCdc.RegisterInterface((*crypto.PubKey)(nil), nil)
 	AminoCdc.RegisterConcrete(ed25519.PubKey{}, "ed25519/pubkey", nil)
 	AminoCdc.RegisterInterface((*crypto.PrivKey)(nil), nil)

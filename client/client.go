@@ -1,7 +1,6 @@
 package client
 
 import (
-	"xchainge"
 	"xchainge/types"
 
 	"bytes"
@@ -27,7 +26,7 @@ const KEYFILENAME string = "exchange.key"
 
 var (
 	cli *rpcclient.HTTP
-	cdc = xchainge.AminoCdc
+	cdc = types.AminoCdc
 	ctx = context.Background()
 )
 
