@@ -42,3 +42,4 @@ func (cmu *Transx) Verify() bool {
 	rslt := cmu.SignPubKey.VerifySignature(data, sig)
 	return rslt
 }
+

@@ -9,7 +9,6 @@ package chain
 import (
 	"xchainge/types"
 
-	"encoding/json"
 	"fmt"
 	"regexp"
 	"bytes"
@@ -72,7 +71,7 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 
 	switch matchmap["cate"] {
 	case "assets", "exchange": // 资产交易历史， 交易所交易历史
-		var respHistory []RespAssetsHistory
+		var respHistory []types.Transx
 		var linkKey []byte
 		var linkType string
 		var qData *[]byte
@@ -108,10 +107,7 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 			cdc.UnmarshalJSON(block.Data.Txs[0], &tx)
 
 			// 添加到返回结果数组
-			respHistory = append(respHistory, RespAssetsHistory{
-				TxRequest: tx,
-				BlockTime: block.Header.Time,
-			})
+			respHistory = append(respHistory, tx)
 
 			fmt.Printf(">> %d ", heightInt)
 
@@ -122,17 +118,13 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 
 		fmt.Println()
 
-		// 返回结果转为json
-		respBytes, err := json.Marshal(respHistory)
-		if err != nil {
-			panic(err)
-		}
+		respBytes, _ := cdc.MarshalJSON(respHistory)
 		rsp.Value = respBytes
 
 	case "refer": // refer参考值的交易 （全库遍历）
 		rsp.Log = "refer history"
 
-		var respHistory []RespAssetsHistory
+		var respHistory []types.Transx
 
 		high := app.state.Height // 链高度
 
@@ -161,10 +153,7 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 			res := bytes.Compare(refer, req.Data)
 			if res==0 {  // 是否相同refer
 				// 添加到返回结果数组
-				respHistory = append(respHistory, RespAssetsHistory{
-					TxRequest: tx,
-					BlockTime: block.Header.Time,
-				})
+				respHistory = append(respHistory, tx)
 
 				fmt.Printf(">> %d ", i)
 			}
@@ -173,11 +162,7 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 
 		fmt.Println()
 
-		// 返回结果转为json
-		respBytes, err := json.Marshal(respHistory)
-		if err != nil {
-			panic(err)
-		}
+		respBytes, _ := cdc.MarshalJSON(respHistory)
 		rsp.Value = respBytes
 
 	default:

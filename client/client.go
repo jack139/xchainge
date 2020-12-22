@@ -11,6 +11,8 @@ import (
 	"time"
 	"context"
 	crypto_rand "crypto/rand"
+	"encoding/json"
+	"encoding/base64"
 
 	cfg "github.com/tendermint/tendermint/config"
 	cmn "github.com/tendermint/tendermint/libs/os"
@@ -101,7 +103,7 @@ func (me *User) Deal(action, assetsId, data, refer string) error {
 	if _, err := io.ReadFull(crypto_rand.Reader, nonce[:]); err != nil {
 		panic(err)
 	}
-	//fmt.Printf("msg=>%v,nonce=>%v,sharedEncryptKey=>%v\n", msg, nonce, *sharedEncryptKey)
+	//fmt.Printf("data=>%v,nonce=>%v,sharedEncryptKey=>%v\n", data, nonce, *sharedEncryptKey)
 	encrypted := box.SealAfterPrecomputation(nonce[:], []byte(data), &nonce, sharedEncryptKey)
 
 	now := time.Now()
@@ -183,7 +185,7 @@ func (me *User) Auth(action, assetsId, toExchangeId, refer string) error {
 	return nil
 }
 
-// 链上查询
+// 链上查询  category取值： exchange, assets, refer
 // xcli queryExchange _
 // xcli queryExchange j9cIgmm17x0aLApf0i20UR7Pj34Ua/JwyWOuBGgYIFg=
 func (me *User) Query(category, queryContent string) error {
@@ -207,7 +209,82 @@ func (me *User) Query(category, queryContent string) error {
 	}
 
 	data := rsp.Response.Value
-	fmt.Printf("resp => %s\n", data)
+	//fmt.Printf("resp => %s\n", data)
+
+	/*
+		exchange 不解密
+		assets 根据授权解密
+		refer 不解密
+	*/
+
+	var txHistory []types.Transx
+	var respList []types.RespQuery
+	cdc.UnmarshalJSON(data, &txHistory)
+
+	for _, tx := range txHistory {
+		deal, ok := tx.Payload.(*types.Deal) // 交易
+		if ok {
+			//fmt.Printf("deal => %v\n", deal)
+
+			// data 默认返回加密数据的 base64
+			data := base64.StdEncoding.EncodeToString(deal.Data)
+			
+			// 如果查询 assets，则尝试解密 data
+			if category=="assets" {
+				var decryptKey, publicKey [32]byte
+
+				if deal.ExchangeID==*me.CryptoPair.PubKey { // 是自己的交易, 进行解密
+					publicKey = deal.ExchangeID
+
+					// 解密 data 数据
+					box.Precompute(&decryptKey, &publicKey, me.CryptoPair.PrivKey)
+					var decryptNonce [24]byte
+					copy(decryptNonce[:], deal.Data[:24])
+					//fmt.Printf("data=>%v,decryptNonce=>%v,decryptKey=>%v\n", deal.Data[24:], decryptNonce, decryptKey)
+					decrypted, ok := box.OpenAfterPrecomputation(nil, deal.Data[24:], &decryptNonce, &decryptKey)
+					if !ok {
+						return fmt.Errorf("decryption error")
+					}
+					data = string(decrypted)
+				}
+			}
+
+			exchangeId, _ := cdc.MarshalJSON(deal.ExchangeID)
+			respList = append(respList, types.RespQuery{
+				Type          : "DEAL",
+				ID            : deal.ID.String(),
+				ExchangeId    : string(exchangeId[1 : len(exchangeId)-1]), // 去掉两边引号
+				AssetsId      : string(deal.AssetsID),
+				Data          : data,
+				Refer         : string(deal.Refer),
+				Action        : deal.Action,
+			})
+		} else {
+			auth, ok := tx.Payload.(*types.Auth)	// 授权
+			if ok {
+				//fmt.Printf("auth => %v\n", auth)
+				exchangeId, _ := cdc.MarshalJSON(auth.FromExchangeID)
+				exchangeId2, _ := cdc.MarshalJSON(auth.ToExchangeID)
+				respList = append(respList, types.RespQuery{
+					Type           : "AUTH",
+					ID             : auth.ID.String(),
+					ExchangeId     : string(exchangeId[1 : len(exchangeId)-1]), // 去掉两边引号
+					AuthExchangeId : string(exchangeId2[1 : len(exchangeId2)-1]),
+					AssetsId       : string(auth.AssetsID),
+					Refer          : string(auth.Refer),
+					Action         : auth.Action,
+				})
+			}
+		}
+	}
+
+	// 返回结果转为json
+	respBytes, err := json.Marshal(respList)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("json => %s\n", respBytes)
 
 	return nil
 }
