@@ -185,6 +185,8 @@ func (me *User) Auth(action, assetsId, toExchangeId, refer string) error {
 }
 
 // 链上查询
+// xcli queryExchange _
+// xcli queryExchange j9cIgmm17x0aLApf0i20UR7Pj34Ua/JwyWOuBGgYIFg=
 func (me *User) Query(category, queryContent string) error {
 	addr, _ := cdc.MarshalJSON(*me.CryptoPair.PubKey)
 
@@ -196,6 +198,9 @@ func (me *User) Query(category, queryContent string) error {
 	buf.WriteString(category)
 	//获得拼接后的字符串
 	path := buf.String()
+	if category=="exchange" && queryContent!="_" {  // 用户公钥需要加双引号
+		queryContent = "\"" + queryContent + "\""	
+	}
 	rsp, err := cli.ABCIQuery(ctx, path, []byte(queryContent))
 	if err != nil {
 		fmt.Println(err)

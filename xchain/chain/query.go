@@ -113,12 +113,14 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 				BlockTime: block.Header.Time,
 			})
 
-			fmt.Println(heightInt)
+			fmt.Printf(">> %d ", heightInt)
 
 			// 在blcok链上找下一个
 			blockLinkKey := blockPrefixKey(linkType, heightInt)
 			height = FindKey(db, blockLinkKey)
 		}
+
+		fmt.Println()
 
 		// 返回结果转为json
 		respBytes, err := json.Marshal(respHistory)
@@ -164,10 +166,12 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 					BlockTime: block.Header.Time,
 				})
 
-				fmt.Println(i)
+				fmt.Printf(">> %d ", i)
 			}
 
 		}
+
+		fmt.Println()
 
 		// 返回结果转为json
 		respBytes, err := json.Marshal(respHistory)
