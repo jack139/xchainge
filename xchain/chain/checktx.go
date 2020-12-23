@@ -38,7 +38,7 @@ func (app *App) isValidAuth(auth *types.Auth) error {
 	m := *auth
 
 	// 检查参数
-	if len(m.FromExchangeID)==0 || len(m.AssetsID)==0 || len(m.ToExchangeID)==0 { 
+	if len(m.FromExchangeID)==0 || len(m.DealID)==0 || len(m.ToExchangeID)==0 { 
 		return fmt.Errorf("bad parameters") // 参数问题
 	}
 

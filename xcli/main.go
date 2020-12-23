@@ -27,7 +27,7 @@ var (
 		Short: "xchainge client",
 		Long:  "xcli is a client tool for xchainge",
 	}
-	dealCmd = &cobra.Command{	// 上链操作
+	dealCmd = &cobra.Command{	// 交易上链操作
 		Use:   "deal",
 		Short: "make a deal",
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -41,30 +41,51 @@ var (
 			return me.Deal(action, assetsId, data, refer)
 		},
 	}
-	authCmd = &cobra.Command{	// 上链操作
-		Use:   "auth",
-		Short: "query auth",
+	authRequestCmd = &cobra.Command{	// 上链操作，请求授权
+		Use:   "authReq",
+		Short: "Request authorization",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) < 4 {
+			if len(args) < 2 {
 				return errors.New("need more parameters")
 			}
-			action := args[0]
-			assetsId := args[1]
-			toExchangeId := args[2]
-			refer := args[3]
-			return me.Auth(action, assetsId, toExchangeId, refer)
+			fromExchangeId := args[0]
+			dealId := args[1] // 请求授权的 dealID
+			return me.AuthRequest(fromExchangeId, dealId)
 		},
 	}
-
-	queryExchangeCmd = &cobra.Command{	// 查询 交易所 交易历史
-		Use:   "queryExchange",
-		Short: "query deals' history of exchange, '_' for local exchange",
+	authResponseCmd = &cobra.Command{	// 上链操作，响应授权
+		Use:   "authResp",
+		Short: "Respond to authorization",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
 				return errors.New("need more parameters")
 			}
-			exchangeId := args[0]
-			return me.Query("exchange", exchangeId)
+			authId := args[0] // 响应授权的 authID
+			return me.AuthResponse(authId)
+		},
+	}
+
+	queryDealCmd = &cobra.Command{	// 查询 交易所 交易历史
+		Use:   "queryDeal",
+		Short: "query deals' history of exchange",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			respBytes, err := me.Query("deal", "_")
+			if err==nil {
+				fmt.Printf("Deal ==> %s\n", respBytes)
+			}
+			return err
+		},
+	}
+
+	queryAuthCmd = &cobra.Command{	// 查询 请求授权 历史
+		Use:   "queryAuth",
+		Short: "query requests of authorization",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			respBytes, err := me.Query("auth", "_")
+			if err==nil {
+				fmt.Printf("Auth ==> %s\n", respBytes)
+			}
+			return err
 		},
 	}
 
@@ -76,7 +97,11 @@ var (
 				return errors.New("need more parameters")
 			}
 			assetsId := args[0]
-			return me.Query("assets", assetsId)
+			respBytes, err := me.Query("assets", assetsId)
+			if err==nil {
+				fmt.Printf("Assets ==> %s\n", respBytes)
+			}
+			return err
 		},
 	}
 
@@ -88,7 +113,28 @@ var (
 				return errors.New("need more parameters")
 			}
 			refer := args[0]
-			return me.Query("refer", refer)
+			respBytes, err := me.Query("refer", refer)
+			if err==nil {
+				fmt.Printf("Refer ==> %s\n", respBytes)
+			}
+			return err
+		},
+	}
+
+	queryTxCmd = &cobra.Command{	// 查询 指定交易
+		Use:   "queryTx",
+		Short: "query deals by DealID",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) < 2 {
+				return errors.New("need more parameters")
+			}
+			exchangeId := args[0]
+			realId := args[1]
+			respBytes, err := me.QueryTx(exchangeId, realId)
+			if err==nil {
+				fmt.Printf("Tx ==> %s\n", respBytes)
+			}
+			return err
 		},
 	}
 
@@ -102,10 +148,13 @@ func init() {
 	me = user
 
 	rootCmd.AddCommand(dealCmd)
-	rootCmd.AddCommand(authCmd)
-	rootCmd.AddCommand(queryExchangeCmd)
+	rootCmd.AddCommand(authRequestCmd)
+	rootCmd.AddCommand(authResponseCmd)
+	rootCmd.AddCommand(queryDealCmd)
 	rootCmd.AddCommand(queryAssetsCmd)
 	rootCmd.AddCommand(queryReferCmd)
+	rootCmd.AddCommand(queryAuthCmd)
+	rootCmd.AddCommand(queryTxCmd)
 }
 
 func main() {

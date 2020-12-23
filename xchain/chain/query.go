@@ -38,8 +38,8 @@ func getMatchMap(submatches []string, groupNames []string) map[string]string {
 curl -g 'http://localhost:26657/abci_query?data="123"&path="/\"qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=\"/query/assets"'
 
 查询交易所历史
-/"qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs="/query/exchange
-curl -g 'http://localhost:26657/abci_query?data="_"&path="/\"qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=\"/query/exchange"'
+/"qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs="/query/deal
+curl -g 'http://localhost:26657/abci_query?data="_"&path="/\"qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=\"/query/deal"'
 
 查询refer历史
 /"qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs="/query/refer
@@ -70,7 +70,7 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 	}
 
 	switch matchmap["cate"] {
-	case "assets", "exchange": // 资产交易历史， 交易所交易历史
+	case "assets", "deal", "auth": // 资产交易历史， 交易所交易历史
 		var respHistory []types.Transx
 		var linkKey []byte
 		var linkType string
@@ -142,12 +142,11 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 			cdc.UnmarshalJSON(block.Data.Txs[0], &tx)
 
 			var refer []byte
-			deal, ok := tx.Payload.(*types.Deal)	// 交易
+			deal, ok := tx.Payload.(*types.Deal)	// 交易块
 			if ok {
 				refer = deal.Refer
-			} else {
-				auth, _ := tx.Payload.(*types.Auth)	// 授权
-				refer = auth.Refer
+			} else {  // 授权块，没有 refer
+				continue 
 			}
 
 			res := bytes.Compare(refer, req.Data)

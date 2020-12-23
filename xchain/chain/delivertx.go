@@ -80,11 +80,14 @@ func (app *App) EndBlock(req tmtypes.RequestEndBlock) (rsp tmtypes.ResponseEndBl
 	} else {
 		auth, ok := tx.Payload.(*types.Auth)	// 授权
 		if ok {
+			// 完善链表
 			exchangeID, _ := cdc.MarshalJSON(auth.FromExchangeID)
 
-			// 完善链表
+			if auth.Action==0x05 {  // 授权时， 加入被授权人的链表
+				exchangeID, _ = cdc.MarshalJSON(auth.ToExchangeID)
+			}
+
 			AddToLink(db, "exchange", exchangeID, req.Height)
-			AddToLink(db, "assets", auth.AssetsID, req.Height)
 		}
 	}
 
