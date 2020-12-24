@@ -78,7 +78,7 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 	}
 
 	switch matchmap["cate"] {
-	case "assets", "deal", "auth": // 资产交易历史， deal交易历史, auth历史
+	case "assets", "deal", "auth", "refer": // 资产交易历史， deal交易历史, auth历史
 		var respHistory []types.Transx
 		var linkKey []byte
 		var linkType string
@@ -94,11 +94,16 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 		fmt.Printf("--> %s\n", *qData)
 
 		// 文件key, 找到链头
-		if matchmap["cate"]=="assets" {
+		switch matchmap["cate"] {
+		case "assets":
 			rsp.Log = "assets history"
 			linkKey = assetsPrefixKey(*qData)
 			linkType = "assets"
-		} else {
+		case "refer":
+			rsp.Log = "exhcange history"
+			linkKey = exhcangePrefixKey(exchangeId)
+			linkType = "exchange"
+		default:
 			rsp.Log = "exhcange history"
 			linkKey = exhcangePrefixKey(*qData)
 			linkType = "exchange"
@@ -114,19 +119,28 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 			var tx types.Transx
 			cdc.UnmarshalJSON(block.Data.Txs[0], &tx)
 
-			_, ok := tx.Payload.(*types.Deal)	// 交易块
+			deal, ok := tx.Payload.(*types.Deal)	// 交易块
 			if ok {
-				if matchmap["cate"]!="auth" { // deal, assets
-					respHistory = append(respHistory, tx) // 添加到返回结果数组
-					fmt.Printf(">> %d", heightInt)
+				if matchmap["cate"]=="auth" { // deal, assets, refer
+					goto go_next
+				}
+				if matchmap["cate"]=="refer" { 
+					fmt.Printf("-----> %s %s\n", deal.Refer, req.Data)
+					res := bytes.Compare(deal.Refer, req.Data)
+					if res!=0 {  // 不同的refer
+						goto go_next
+					}
 				}
 			} else {  // 授权块，没有 refer
-				if matchmap["cate"]=="auth" { // auth
-					respHistory = append(respHistory, tx) // 添加到返回结果数组
-					fmt.Printf(">> %d", heightInt)
+				if matchmap["cate"]!="auth" { // auth
+					goto go_next
 				}
 			}
 
+			respHistory = append(respHistory, tx) // 添加到返回结果数组
+			fmt.Printf(">> %d", heightInt)
+
+		go_next:
 			// 在blcok链上找下一个
 			blockLinkKey := blockPrefixKey(linkType, heightInt)
 			height = FindKey(db, blockLinkKey)
@@ -137,7 +151,7 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 		respBytes, _ := cdc.MarshalJSON(respHistory)
 		rsp.Value = respBytes
 
-	case "refer": // refer参考值的交易 （全库遍历）
+	case "___global_refer": // refer参考值的交易 （全库遍历）
 		rsp.Log = "refer history"
 
 		var respHistory []types.Transx
