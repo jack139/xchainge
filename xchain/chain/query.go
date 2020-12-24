@@ -4,8 +4,6 @@ package chain
 	链上查询
 */
 
-
-
 import (
 	"xchainge/types"
 
@@ -31,6 +29,16 @@ func getMatchMap(submatches []string, groupNames []string) map[string]string {
 	}
 	return result
 }
+
+
+/*
+ 	按 refer 检索		/"<pubkey>"/query/refer
+	按 assets 检索	/"<pubkey>"/query/assets
+	检索 所有 auth 块		/"<pubkey>"/query/auth
+	检索 所有 deal 块		/"<pubkey>"/query/deal
+	检索 指定 deal/auth 块	/"<pubkey>"/query/tx
+*/
+
 
 /*
 查询资产历史
@@ -70,7 +78,7 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 	}
 
 	switch matchmap["cate"] {
-	case "assets", "deal", "auth": // 资产交易历史， 交易所交易历史
+	case "assets", "deal", "auth": // 资产交易历史， deal交易历史, auth历史
 		var respHistory []types.Transx
 		var linkKey []byte
 		var linkType string
@@ -106,10 +114,18 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 			var tx types.Transx
 			cdc.UnmarshalJSON(block.Data.Txs[0], &tx)
 
-			// 添加到返回结果数组
-			respHistory = append(respHistory, tx)
-
-			fmt.Printf(">> %d ", heightInt)
+			_, ok := tx.Payload.(*types.Deal)	// 交易块
+			if ok {
+				if matchmap["cate"]!="auth" { // deal, assets
+					respHistory = append(respHistory, tx) // 添加到返回结果数组
+					fmt.Printf(">> %d", heightInt)
+				}
+			} else {  // 授权块，没有 refer
+				if matchmap["cate"]=="auth" { // auth
+					respHistory = append(respHistory, tx) // 添加到返回结果数组
+					fmt.Printf(">> %d", heightInt)
+				}
+			}
 
 			// 在blcok链上找下一个
 			blockLinkKey := blockPrefixKey(linkType, heightInt)
@@ -164,9 +180,115 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 		respBytes, _ := cdc.MarshalJSON(respHistory)
 		rsp.Value = respBytes
 
+	case "tx": // 指定ID的 deal 或 auth 
+		var qData [2][]byte
+
+		// req.Data 格式： ["用户公钥", "DealID"]
+		cdc.UnmarshalJSON(req.Data, &qData)
+
+		if string(qData[0])=="_" {  //  查询自己的交易记录
+			qData[0] = exchangeId
+		}
+
+		fmt.Printf("--> %s %s\n", qData[0], qData[1])
+
+		// 文件key, 找到链头
+		rsp.Log = "query TX"
+
+		respTx := queryTx(app, qData[0], qData[1])
+
+		if respTx!=nil {
+			respBytes, _ := cdc.MarshalJSON(*respTx)
+			rsp.Value = respBytes
+		} else {
+			rsp.Value = nil
+		}
+
+	case "check_auth_resp": // 检查 授权请求（authID） 是否已进行响应
+		var qData [2][]byte
+
+		// req.Data 格式： ["用户公钥", "DealID"]
+		cdc.UnmarshalJSON(req.Data, &qData)
+
+		if string(qData[0])=="_" {  //  查询自己的交易记录
+			qData[0] = exchangeId
+		}
+
+		fmt.Printf("--> %s %s\n", qData[0], qData[1])
+
+		rsp.Log = "check auth response"
+		linkKey := exhcangePrefixKey(qData[0])
+
+		rsp.Value = []byte{0}
+
+		height := FindKey(db, linkKey)  // 这里 height 返回是 []byte
+		for ;len(height)!=0; {
+			// 高度转换为int64
+			heightInt := ByteArrayToInt64(height)
+			// 获取区块内容
+			block := GetBlock(heightInt)
+
+			var tx types.Transx
+			cdc.UnmarshalJSON(block.Data.Txs[0], &tx)
+
+			auth, ok := tx.Payload.(*types.Auth)	// 授权块
+			if ok {
+				// DealID相同，说明已回复
+				if auth.Action==0x05 && auth.DealID.String()==string(qData[1]) {
+					rsp.Value = []byte{1}
+					break
+				}
+			}
+
+			// 在blcok链上找下一个
+			blockLinkKey := blockPrefixKey("exchange", heightInt)
+			height = FindKey(db, blockLinkKey)
+		}
+
 	default:
 		rsp.Log = "weird command"
 		rsp.Code = 2
+	}
+
+	return
+}
+
+
+func queryTx(app *App ,exchangeId, dealId []byte) (respTx *types.Transx) {
+	db := app.state.db
+
+	// 找到链头
+	linkKey := exhcangePrefixKey(exchangeId)
+	height := FindKey(db, linkKey)  // 这里 height 返回是 []byte
+
+	for ;len(height)!=0; {
+		// 高度转换为int64
+		heightInt := ByteArrayToInt64(height)
+		// 获取区块内容
+		block := GetBlock(heightInt)
+
+		var tx types.Transx
+		cdc.UnmarshalJSON(block.Data.Txs[0], &tx)
+
+		deal, ok := tx.Payload.(*types.Deal)	// 交易块
+		if ok {
+			if deal.ID.String()==string(dealId) {
+				respTx = &tx
+				break
+			}
+		} else {  // 授权块，没有 refer
+			auth, ok := tx.Payload.(*types.Auth)	// 授权块
+			if ok {
+				if auth.ID.String()==string(dealId) {
+					respTx = &tx
+					break
+				}
+			}
+		}
+
+		// 在blcok链上找下一个
+		blockLinkKey := blockPrefixKey("exchange", heightInt)
+		height = FindKey(db, blockLinkKey)
 	}
 
 	return

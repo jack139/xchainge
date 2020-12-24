@@ -43,8 +43,13 @@ func (app *App) isValidAuth(auth *types.Auth) error {
 	}
 
 	switch m.Action {
-	case 0x04, 0x05, 0x06: 
-		{}
+	case 0x04, 0x05:
+		// 检查 dealID 是否存在
+		fromExchangeIdStr, _ := cdc.MarshalJSON(m.FromExchangeID)
+		respTx := queryTx(app, fromExchangeIdStr, []byte(m.DealID.String()))
+		if respTx==nil {
+			return fmt.Errorf("DealID not exist.")	
+		}
 	default:
 		return fmt.Errorf("weird auth command")
 	}

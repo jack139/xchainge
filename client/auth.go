@@ -85,22 +85,10 @@ func (me *User) AuthResponse(authId string) error {
 
 	// 检查是否已响应过，在toExchangeID的列表里找
 	toExchangeId, _ := cdc.MarshalJSON(auth.ToExchangeID)
-	toAuthList, err := query(addr, "auth", string(toExchangeId[1 : len(toExchangeId)-1]))
+	isAuthorised, err := checkAuthResp(addr, string(toExchangeId), auth.DealID.String())
 	if err != nil {
 		return err
 	}
-
-	isAuthorised := false
-	for _, tx := range *toAuthList {
-		authItem, ok := tx.Payload.(*types.Auth) // 交易
-		if ok {
-			if authItem.Action==0x05 && authItem.DealID==auth.DealID {
-				isAuthorised = true
-				break
-			}
-		}
-	}
-
 	if isAuthorised { // 已经授权过
 		return fmt.Errorf("Authorized")
 	}
@@ -110,7 +98,6 @@ func (me *User) AuthResponse(authId string) error {
 	if err != nil {
 		return err
 	}
-
 	if dealTx==nil {
 		return fmt.Errorf("DealID not found")
 	}

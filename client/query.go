@@ -40,14 +40,17 @@ func queryTx(addr []byte, exchangeId, idStr string) (*types.Transx, error) {
 	var buf bytes.Buffer
 	buf.WriteString("/")
 	buf.Write(addr)
-	buf.WriteString("/query/deal")
+	buf.WriteString("/query/tx")
 	//获得拼接后的字符串
 	path := buf.String()
 	if exchangeId!="_" {  // 用户公钥需要加双引号
 		exchangeId = "\"" + exchangeId + "\""	
 	}
 
-	rsp, err := cli.ABCIQuery(ctx, path, []byte(exchangeId))
+	// req.Data 格式： ["用户公钥", "DealID"]
+	reqBytes, _ := cdc.MarshalJSON([2][]byte{[]byte(exchangeId), []byte(idStr)})
+
+	rsp, err := cli.ABCIQuery(ctx, path, reqBytes)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
@@ -56,30 +59,15 @@ func queryTx(addr []byte, exchangeId, idStr string) (*types.Transx, error) {
 	data := rsp.Response.Value
 	//fmt.Printf("resp => %s\n", data)
 
-	var txHistory []types.Transx
-	cdc.UnmarshalJSON(data, &txHistory)
-
-	for _, tx := range txHistory {
-		deal, ok := tx.Payload.(*types.Deal) // 交易
-		if ok {
-			//fmt.Printf("deal => %v\n", deal)
-			if deal.ID.String()==idStr {
-				return &tx, nil
-			}
-
-		} else {
-			auth, ok := tx.Payload.(*types.Auth)	// 授权
-			if ok {
-				//fmt.Printf("auth => %v\n", auth)
-				if auth.ID.String()==idStr {
-					return &tx, nil
-				}
-			}
-		}
+	if data!=nil {
+		var respTx types.Transx
+		cdc.UnmarshalJSON(data, &respTx)
+		return &respTx, nil
+	} else {
+		return nil, nil
 	}
-
-	return nil, nil
 }
+
 
 // 链上查询  category取值： deal, auth, assets, refer
 // deal 和 auth 可以带公钥，查其他人的 
@@ -115,8 +103,10 @@ func query(addr []byte, category, queryContent string) (*[]types.Transx, error) 
 	buf.WriteString(category)
 	//获得拼接后的字符串
 	path := buf.String()
-	if (category=="deal"||category=="auth") && queryContent!="_" {  // 用户公钥需要加双引号
-		queryContent = "\"" + queryContent + "\""	
+	if (category=="deal"||category=="auth") && queryContent!="_" {  
+		if queryContent[0]!='"' { // 用户公钥需要加双引号
+			queryContent = "\"" + queryContent + "\""
+		}
 	}
 	rsp, err := cli.ABCIQuery(ctx, path, []byte(queryContent))
 	if err != nil {
@@ -152,4 +142,26 @@ func query(addr []byte, category, queryContent string) (*[]types.Transx, error) 
 
 	return &txResp, nil
 
+}
+
+
+// 检查 授权请求的交易（dealID） 是否已进行响应
+func checkAuthResp(addr []byte, toExchangeId, dealId string) (bool, error) {
+	var buf bytes.Buffer
+	buf.WriteString("/")
+	buf.Write(addr)
+	buf.WriteString("/query/check_auth_resp")
+	//获得拼接后的字符串
+	path := buf.String()
+
+	// req.Data 格式： ["用户公钥", "DealID"]
+	reqBytes, _ := cdc.MarshalJSON([2][]byte{[]byte(toExchangeId), []byte(dealId)})
+
+	rsp, err := cli.ABCIQuery(ctx, path, reqBytes)
+	if err != nil {
+		fmt.Println(err)
+		return false, err
+	}
+
+	return rsp.Response.Value[0]==1, nil
 }
