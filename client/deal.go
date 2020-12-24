@@ -12,10 +12,22 @@ import (
 	"golang.org/x/crypto/nacl/box"
 )
 
-
+func isASCII(s string) bool {
+    for i := 0; i < len(s); i++ {
+        if s[i] <= 32 || s[i] >= 127 {
+            return false
+        }
+    }
+    return true
+}
 
 // 交易上链，数据加密
 func (me *User) Deal(action, assetsId, data, refer string) error {
+
+	if !isASCII(assetsId) {
+		return fmt.Errorf("assetsId must be visible ASCII")
+	}
+
 	// 交易所id
 	exchangeId := *me.CryptoPair.PubKey
 
