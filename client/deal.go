@@ -66,7 +66,7 @@ func (me *User) Deal(action, assetsId, data, refer string) error {
 		return err
 	}
 
-	ret, err := cli.BroadcastTxAsync(ctx, bz)
+	ret, err := cli.BroadcastTxSync(ctx, bz)
 	if err != nil {
 		fmt.Println(err)
 		return err
