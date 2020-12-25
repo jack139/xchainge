@@ -42,12 +42,14 @@ if __name__ == '__main__':
     sign_str = '%s&key=%s' % (param_str, '43E554621FF7BF4756F8C1ADF17F209C')
 
     if body['signType'] == 'SHA256':
-        signature_str =  base64.b64encode(hashlib.sha256(sign_str.encode('utf-8')).hexdigest().encode('utf-8')).decode('utf-8')
+        sha256 = hashlib.sha256(sign_str.encode('utf-8')).hexdigest().encode('utf-8')
+        signature_str =  base64.b64encode(sha256).decode('utf-8')
     else: # SM2
         #signature_str = sm2.SM2withSM3_sign_base64(sign_str)
         pass
 
-    #print(sign_str)
+    print(sign_str)
+    print(sha256)
 
     body['signData'] = signature_str
 
