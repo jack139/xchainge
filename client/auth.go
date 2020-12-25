@@ -59,6 +59,13 @@ func (me *User) AuthRequest(fromExchangeId, dealId string) error {
 		return err
 	}
 	fmt.Printf("auth request => %+v\n", ret)
+
+	// ret  *ctypes.ResultBroadcastTxCommit
+	if ret.Code !=0 {
+		fmt.Println(ret.Log)
+		return fmt.Errorf(ret.Log)
+	}
+
 	return nil
 }
 
@@ -163,6 +170,14 @@ func (me *User) AuthResponse(authId string) error {
 		fmt.Println(err)
 		return err
 	}
+
 	fmt.Printf("auth respose => %+v\n", ret)
+
+	// ret  *ctypes.ResultBroadcastTxCommit
+	if ret.Code !=0 {
+		fmt.Println(ret.Log)
+		return fmt.Errorf(ret.Log)
+	}
+
 	return nil
 }

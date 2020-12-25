@@ -71,6 +71,14 @@ func (me *User) Deal(action, assetsId, data, refer string) error {
 		fmt.Println(err)
 		return err
 	}
+
 	fmt.Printf("deal => %+v\n", ret)
+
+	// ret  *ctypes.ResultBroadcastTxCommit
+	if ret.Code !=0 {
+		fmt.Println(ret.Log)
+		return fmt.Errorf(ret.Log)
+	}
+
 	return nil
 }
