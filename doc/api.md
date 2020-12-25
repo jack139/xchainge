@@ -10,16 +10,16 @@
 
 #### 1. 节点
 
-​		节点是区块链上的一个业务处理和存储的单元，是一个具有独立处理区块链业务的服务程序。节点可以是一台物理服务器，也可以是多个节点公用一个物理服务器，通过不同端口提供各自节点的功能。
+​		节点是区块链上的一个业务处理和存储的单元，是一个具有独立处理区块链业务的服务程序。节点可以是一台物理服务器，也可以是多个节点共用一个物理服务器，通过不同端口提供各自节点的功能。
 
 #### 2. 链用户
 
-​		链用户是具有在提交区块链交易的用户，线下可定义为交易所。每个链用户通过一对密钥识别，同时使用此密钥进行数据的加密解密操作，因此链用户的密钥需要妥善保管。密钥类似如下形式：
+​		链用户是具有提交区块链交易权限的用户，线下可定义为交易所。每个链用户通过一对密钥识别（例如下例中的PubKey），同时使用此密钥进行数据的加密解密操作，因此链用户的密钥需要妥善保管。密钥类似如下形式：
 ```json
 {
 	"sign_key":{
 		"type":"ed25519/privkey",
-		"value":"UgM13IPx/BkwfQo8jceLq1CiXlT3lm4WLZ6K6TMR5bRueBGgTDVAv7ZLdBooTZWm2ixLaNitCW91NHW06h8VQw=="
+		"value":"UgM13IPx/BkwfQo8jce6TMR5bRuAv7ZLdBooTZWm2ixLaNitCW91NHW06h8VQw=="
 	},
 	"CryptoPair":{
 		"PrivKey":"tgNfUoYkh9xKs1hVKs+5uXNetCxvDRRHBNmLMs5/NKk=",
@@ -29,7 +29,7 @@
 ```
 
 #### 3. 交易区块
-​		链上数据存储在区块中，区块目前分两类：（1）买卖交易区块；（2）数据授权区块。买卖交易用于存储买入卖出交易的交易信息和交易数据。交易区块中的部分数据是公开的，部分数据是加密的。链用户只能查看自己提交的区块的加密数据。如果要查看其他链用户的加密数据，需要使用向交易提交者进行请求授权。当交易提交者同意并授权后，请求方才能看到相应区块的加密数据。请求和授权过程也会记录在区块链上，用于追溯。
+​		链上数据存储在区块链的区块中，区块目前分两类：（1）交易区块；（2）授权区块。交易区块用于存储买入卖出交易的交易信息和交易数据。交易区块中的部分数据是公开的，部分数据是加密的。链用户只能查看自己提交的区块上的加密数据。如果要查看其他链用户的区块加密数据，需要向区块所有者（即区块的提交者）进行请求授权。当区块所有者同意并授权后，请求方才能看到相应加密区块的数据。同时，请求和授权过程也会记录在区块链上，用于追溯。
 
 **交易区块内容：**
 
@@ -87,8 +87,8 @@
 | 参数      | 类型   | 说明                          | 示例        |
 | --------- | ------ | ----------------------------- | ----------- |
 | appId     | string | 应用渠道编号                  |             |
-| version   | string | 版本号                        |             |
-| signType  | string | 签名算法，目前使用SHA256算法 | SHA256或SM2 |
+| version   | string | 版本号                        | 1 |
+| signType  | string | 签名算法，目前使用SHA256算法 | SHA256 |
 | signData  | string | 签名数据，具体算法见下文      |             |
 | timestamp | int    | unix时间戳（秒）              |             |
 | data      | json   | 接口数据，详见各接口定义      |             |
@@ -96,8 +96,8 @@
 > 签名/验签算法：
 >
 > 1. 筛选，获取参数键值对，剔除signData参数。data参数按key升序排列进行json序列化。
-> 2. 排序，按key升序排序。
-> 3. 拼接，按排序好的顺序拼接请求参数
+> 2. 排序，按key升序排序；data中json也按key升序排序。
+> 3. 拼接，按排序好的顺序拼接请求参数。
 >
 > ```key1=value1&key2=value2&...&key=appSecret```，key=appSecret固定拼接在参数串末尾，appSecret需替换成应用渠道所分配的appSecret。
 >
@@ -109,54 +109,46 @@
 ```json
 请求参数：
 {
-    "appid":"19E179E5DC29C05E65B90CDE57A1C7E5",
-    "version": "1",
-    "signType": "SHA256",
-    "signData": "...",
-    "timestamp":1591943910,
+    "appId": "66A095861BAE55F8735199DBC45D3E8E", 
+    "version": "1", 
     "data": {
-    	"user_id":"gt",
-    	"face_id":"5ed21b1c262daabe314048f5"
-    }
+        "test1": "test1", 
+        "atest2": "test2", 
+        "Atest2": "test2"
+    }, 
+    "timestamp": 1608904438, 
+    "signType": "SHA256",  
+    "signData": "..."
 }
 
 密钥：
-appSecret="D91CEB11EE62219CD91CEB11EE62219C"
+appSecret="43E554621FF7BF4756F8C1ADF17F209C"
 
 待加签串：
-appid=19E179E5DC29C05E65B90CDE57A1C7E5&data={"face_id":"5ed21b1c262daabe314048f5","user_id":"gt"}&signType=SHA256&timestamp=1591943910&version=1&key=D91CEB11EE62219CD91CEB11EE62219C
+appId=66A095861BAE55F8735199DBC45D3E8E&data={"Atest2":"test2","atest2":"test2","test1":"test1"}&signType=SHA256&timestamp=1608904438&version=1&key=43E554621FF7BF4756F8C1ADF17F209C
 
 SHA256加签结果：
-"10e13147546debbea157ec793170968c6c614f4eb13ccd9b7a9c193bf1b3bd78"
+"630112a8597ab7b834586d4b58bb84cd59ea57234dcb22195023c54ea5ceb9e2"
 
 base64后结果：
-"MTBlMTMxNDc1NDZkZWJiZWExNTdlYzc5MzE3MDk2OGM2YzYxNGY0ZWIxM2NjZDliN2E5YzE5M2JmMWIzYmQ3OA=="
+"NjMwMTEyYTg1OTdhYjdiODM0NTg2ZDRiNThiYjg0Y2Q1OWVhNTcyMzRkY2IyMjE5NTAyM2M1NGVhNWNlYjllMg=="
 ```
 
 返回结果
 
 | 参数      | 类型    | 说明                                                         |
 | --------- | ------- | ------------------------------------------------------------ |
-| code      | int   | 返回状态代码，0 表示成功，非0 表示出错                                 |
-| msg   | string | 出错时，返回出错信息                                                     |
+| code      | int   | 状态代码，0 表示成功，非0 表示出错                                 |
+| msg   | string | 成功时返回success；出错时，返回出错信息                                                     |
 | data      | json    | 成功时返回结果数据，详见具体接口                |
-
-> 成功时：code为0， success为True，data内容见各接口定义；
->
-> 出错时：code返回错误代码，具体定义见各接口说明
 
 返回示例
 
 ```json
 {
-    "appId": "19E179E5DC29C05E65B90CDE57A1C7E5", 
     "code": 0, 
-    "encType": "plain",
-    "success": true,
-    "timestamp": 1591943910,
+    "msg": "success", 
     "data": {
-       "msg": "success", 
-       ...
     }
 }
 ```
@@ -165,9 +157,7 @@ base64后结果：
 
 | 编码 | 说明                               |
 | ---- | ---------------------------------- |
-| 9800 | 无效签名                           |
-| 9801 | 签名参数有错误                     |
-| 9802 | 调用时间错误，unixtime超出接受范围 |
+| 9000 | 签名错误                           |
 
 
 

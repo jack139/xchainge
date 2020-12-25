@@ -48,13 +48,14 @@ if __name__ == '__main__':
         #signature_str = sm2.SM2withSM3_sign_base64(sign_str)
         pass
 
-    print(sign_str)
-    print(sha256)
+    #print(sign_str)
+    #print(sha256)
+    #print(signature_str)
 
     body['signData'] = signature_str
 
     body = json.dumps(body)
-    print(body)
+    #print(body)
 
     pool = urllib3.PoolManager(num_pools=2, timeout=180, retries=False)
 

@@ -36,6 +36,8 @@ func RunServer(port string) {
 	r.POST("/test", doNonthing)
 	//r.POST("/qa", onQA)
 
+	fmt.Printf("start HTTP server at 0.0.0.0:%s\n", port)
+
 	/* 启动server */
 	s := &fasthttp.Server{
 		Handler: fasthttplogger.Combined(r.Handler),
@@ -53,6 +55,24 @@ func index(ctx *fasthttp.RequestCtx) {
 
 
 /* 处理返回值，返回json */
+func respJson(ctx *fasthttp.RequestCtx, data map[string] interface{}) {
+	respJson := map[string] interface{} {
+		"code" : 0,
+		"msg"  : "success",
+		"data" : data,
+	}
+	doJSONWrite(ctx, fasthttp.StatusOK, respJson)
+}
+
+func respError(ctx *fasthttp.RequestCtx, code int, msg string) {
+	respJson := map[string] interface{} {
+		"code" : code,
+		"msg"  : msg,
+		"data" : "",
+	}
+	doJSONWrite(ctx, fasthttp.StatusOK, respJson)
+}
+
 func doJSONWrite(ctx *fasthttp.RequestCtx, code int, obj interface{}) {
 	ctx.Response.Header.SetCanonical(strContentType, strApplicationJSON)
 	ctx.Response.SetStatusCode(code)
@@ -75,33 +95,32 @@ func checkSign(content []byte) (*map[string]interface{}, error) {
 		return nil, err
 	}
 
+	var appId, version, signType, signData string
+	var timestamp int64
+	var data map[string]interface{}
+	var ok bool
+
 	// 检查参数
-	if _, ok := fields["appId"]; !ok {
+	if appId, ok = fields["appId"].(string); !ok {
 		return nil, fmt.Errorf("need appId")
 	}	
-	if _, ok := fields["version"]; !ok {
+	if version, ok = fields["version"].(string); !ok {
 		return nil, fmt.Errorf("need version")
 	}	
-	if _, ok := fields["signType"]; !ok {
+	if signType, ok = fields["signType"].(string); !ok {
 		return nil, fmt.Errorf("need signType")
 	}	
-	if _, ok := fields["signData"]; !ok {
+	if signData, ok = fields["signData"].(string); !ok {
 		return nil, fmt.Errorf("need signData")
 	}	
-	if _, ok := fields["timestamp"]; !ok {
+	if _, ok = fields["timestamp"].(float64); !ok {
 		return nil, fmt.Errorf("need timestamp")
-	}	
-	if _, ok := fields["data"]; !ok {
+	} else {
+		timestamp = int64(fields["timestamp"].(float64))	// 返回整数
+	}
+	if data, ok = fields["data"].(map[string]interface{}); !ok {
 		return nil, fmt.Errorf("need data")
 	}	
-
-	// 获取参数
-	appId     := fields["appId"].(string)
-	version   := fields["version"].(string)
-	signType  := fields["signType"].(string)
-	signData  := fields["signData"].(string)
-	timestamp := int(fields["timestamp"].(float64))
-	data := fields["data"].(map[string]interface{})
 
 	// 取得 secret
 	secret, ok := SECRET_KEY[appId]
@@ -136,7 +155,7 @@ func checkSign(content []byte) (*map[string]interface{}, error) {
 		if k=="data" {
 			signString += k + "=" + string(dataStr) + "&"
 		} else if k=="timestamp" {
-			signString += k + "=" + strconv.Itoa(timestamp) + "&"
+			signString += k + "=" + strconv.FormatInt(timestamp, 10) + "&"
 		} else {
 			signString += k + "=" + fields[k].(string) + "&"
 		}
@@ -149,19 +168,18 @@ func checkSign(content []byte) (*map[string]interface{}, error) {
 	sum := h.Sum(nil)
 	sha256Str := fmt.Sprintf("%x", sum)
 	signStr := base64.StdEncoding.EncodeToString([]byte(sha256Str))
-
 	//fmt.Println(sha256Str)
-	fmt.Println(signStr)
-	fmt.Println(signData)
 
 	if signStr!=signData {
+		fmt.Println(signStr)
+		fmt.Println(signData)		
 		return nil, fmt.Errorf("wrong signature")
 	}
 
 	return &data, nil
 }
 
-
+// 返回 map 所有 key
 func getMapKeys(m map[string]interface{}) *[]string {
 	var keys []string
 	for k := range m {
