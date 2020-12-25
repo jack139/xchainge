@@ -90,13 +90,12 @@
 | version   | string | 版本号                        |             |
 | signType  | string | 签名算法，目前使用SHA256算法 | SHA256或SM2 |
 | signData  | string | 签名数据，具体算法见下文      |             |
-| encType   | string | 接口数据加密算法，目前不加密  | plain       |
 | timestamp | int    | unix时间戳（秒）              |             |
 | data      | json   | 接口数据，详见各接口定义      |             |
 
 > 签名/验签算法：
 >
-> 1. 筛选，获取参数键值对，剔除signData、encData、extra三个参数。data参数按key升序排列进行json序列化。
+> 1. 筛选，获取参数键值对，剔除signData参数。data参数按key升序排列进行json序列化。
 > 2. 排序，按key升序排序。
 > 3. 拼接，按排序好的顺序拼接请求参数
 >
@@ -114,7 +113,6 @@
     "version": "1",
     "signType": "SHA256",
     "signData": "...",
-    "encType": "plain",
     "timestamp":1591943910,
     "data": {
     	"user_id":"gt",
@@ -126,7 +124,7 @@
 appSecret="D91CEB11EE62219CD91CEB11EE62219C"
 
 待加签串：
-appid=19E179E5DC29C05E65B90CDE57A1C7E5&data={"user_id":"gt","face_id":"5ed21b1c262daabe314048f5"}&encType=plain&signType=SM2&timestamp=1591943910&version=1&key=D91CEB11EE62219CD91CEB11EE62219C
+appid=19E179E5DC29C05E65B90CDE57A1C7E5&data={"face_id":"5ed21b1c262daabe314048f5","user_id":"gt"}&signType=SHA256&timestamp=1591943910&version=1&key=D91CEB11EE62219CD91CEB11EE62219C
 
 SHA256加签结果：
 "10e13147546debbea157ec793170968c6c614f4eb13ccd9b7a9c193bf1b3bd78"
@@ -139,12 +137,10 @@ base64后结果：
 
 | 参数      | 类型    | 说明                                                         |
 | --------- | ------- | ------------------------------------------------------------ |
-| appId     | string  | 应用渠道编号                                                 |
-| code      | string  | 返回状态代码                                                 |
-| encType   | string  | 数据加密算法，目前不加密                                     |
-| success   | boolean | 成功与否                                                     |
+| code      | int   | 返回状态代码，0 表示成功，非0 表示出错                                 |
+| msg   | string | 出错时，返回出错信息                                                     |
 | timestamp | int     | unix时间戳                                                   |
-| data      | json    | 成功时返回结果数据；出错时，data.msg返回错误说明。详见具体接口 |
+| data      | json    | 成功时返回结果数据，详见具体接口                |
 
 > 成功时：code为0， success为True，data内容见各接口定义；
 >

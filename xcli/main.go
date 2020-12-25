@@ -12,6 +12,7 @@ package main
 
 import (
 	"xchainge/client"
+	"xchainge/http"
 
 	"errors"
 	"fmt"
@@ -138,6 +139,19 @@ var (
 		},
 	}
 
+	httpCmd = &cobra.Command{	// 启动http服务
+		Use:   "http",
+		Short: "start http service",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return errors.New("need port number")
+			} 
+			http.RunServer(args[0])
+			// 不会返回
+			return nil
+		},
+	}
+
 )
 
 func init() {
@@ -155,6 +169,7 @@ func init() {
 	rootCmd.AddCommand(queryReferCmd)
 	rootCmd.AddCommand(queryAuthCmd)
 	rootCmd.AddCommand(queryTxCmd)
+	rootCmd.AddCommand(httpCmd)
 }
 
 func main() {
