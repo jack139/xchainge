@@ -101,16 +101,16 @@ func checkSign(content []byte) (*map[string]interface{}, error) {
 	var ok bool
 
 	// 检查参数
-	if appId, ok = fields["appId"].(string); !ok {
+	if appId, ok = fields["appid"].(string); !ok {
 		return nil, fmt.Errorf("need appId")
 	}	
 	if version, ok = fields["version"].(string); !ok {
 		return nil, fmt.Errorf("need version")
 	}	
-	if signType, ok = fields["signType"].(string); !ok {
+	if signType, ok = fields["sign_type"].(string); !ok {
 		return nil, fmt.Errorf("need signType")
 	}	
-	if signData, ok = fields["signData"].(string); !ok {
+	if signData, ok = fields["sign_data"].(string); !ok {
 		return nil, fmt.Errorf("need signData")
 	}	
 	if _, ok = fields["timestamp"].(float64); !ok {
@@ -149,7 +149,7 @@ func checkSign(content []byte) (*map[string]interface{}, error) {
 	// 拼接验签串
 	var signString = string("")
 	for _,k:= range *keys {
-		if k=="signData" {
+		if k=="sign_data" {
 			continue
 		}
 		if k=="data" {

@@ -25,7 +25,7 @@ if __name__ == '__main__':
 
     body = {
         'version'  : '1',
-        'signType' : 'SHA256', 
+        'sign_type' : 'SHA256', 
         'data'     : {
             'test1'    : 'test1',
             'atest2'    : 'test2',
@@ -36,12 +36,12 @@ if __name__ == '__main__':
     appid = '66A095861BAE55F8735199DBC45D3E8E'
     unixtime = int(time.time())
     body['timestamp'] = unixtime
-    body['appId'] = appid
+    body['appid'] = appid
 
     param_str = gen_param_str(body)
     sign_str = '%s&key=%s' % (param_str, '43E554621FF7BF4756F8C1ADF17F209C')
 
-    if body['signType'] == 'SHA256':
+    if body['sign_type'] == 'SHA256':
         sha256 = hashlib.sha256(sign_str.encode('utf-8')).hexdigest().encode('utf-8')
         signature_str =  base64.b64encode(sha256).decode('utf-8')
     else: # SM2
@@ -52,7 +52,7 @@ if __name__ == '__main__':
     #print(sha256)
     #print(signature_str)
 
-    body['signData'] = signature_str
+    body['sign_data'] = signature_str
 
     body = json.dumps(body)
     #print(body)

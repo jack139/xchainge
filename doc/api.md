@@ -72,8 +72,9 @@
 |  6   | query_by_assets | 按资产ID进行检索（可能包括其他链用户的区块） |
 |  7   | query_by_refer  | 按参考值进行检索                             |
 |  8   | query_block     | 按区块ID查询制定区块                         |
-|  9   | ipfs_upload     | 数据上传到ipfs                               |
-|  10  | ipfs_download   | 从ipfs下载数据                               |
+|  9   | query_raw_block | 按区块ID查询制定区块原始数据                 |
+|  10  | ipfs_upload     | 数据上传到ipfs                               |
+|  11  | ipfs_download   | 从ipfs下载数据                               |
 
 
 
@@ -86,20 +87,20 @@
 
 | 参数      | 类型   | 说明                          | 示例        |
 | --------- | ------ | ----------------------------- | ----------- |
-| appId     | string | 应用渠道编号                  |             |
+| appid | string | 应用渠道编号                  |             |
 | version   | string | 版本号                        | 1 |
-| signType  | string | 签名算法，目前使用SHA256算法 | SHA256 |
-| signData  | string | 签名数据，具体算法见下文      |             |
+| sign_type | string | 签名算法，目前使用SHA256算法 | SHA256 |
+| sign_data | string | 签名数据，具体算法见下文      |             |
 | timestamp | int    | unix时间戳（秒）              |             |
 | data      | json   | 接口数据，详见各接口定义      |             |
 
 > 签名/验签算法：
 >
-> 1. 筛选，获取参数键值对，剔除signData参数。data参数按key升序排列进行json序列化。
+> 1. 筛选，获取参数键值对，剔除sign_data参数。data参数按key升序排列进行json序列化。
 > 2. 排序，按key升序排序；data中json也按key升序排序。
 > 3. 拼接，按排序好的顺序拼接请求参数。
 >
-> ```key1=value1&key2=value2&...&key=appSecret```，key=appSecret固定拼接在参数串末尾，appSecret需替换成应用渠道所分配的appSecret。
+> ```key1=value1&key2=value2&...&key=appSecret```，key=app_secret固定拼接在参数串末尾，app_secret需替换成应用渠道所分配的app_secret。
 >
 > 4. 签名，使用制定的算法进行加签获取二进制字节，使用 16进制进行编码Hex.encode得到签名串，然后base64编码。
 > 5. 验签，对收到的参数按1-4步骤签名，比对得到的签名串与提交的签名串是否一致。
@@ -109,7 +110,7 @@
 ```json
 请求参数：
 {
-    "appId": "66A095861BAE55F8735199DBC45D3E8E", 
+    "appid": "66A095861BAE55F8735199DBC45D3E8E", 
     "version": "1", 
     "data": {
         "test1": "test1", 
@@ -117,21 +118,21 @@
         "Atest2": "test2"
     }, 
     "timestamp": 1608904438, 
-    "signType": "SHA256",  
-    "signData": "..."
+    "sign_type": "SHA256",  
+    "sign_data": "..."
 }
 
 密钥：
-appSecret="43E554621FF7BF4756F8C1ADF17F209C"
+app_secret="43E554621FF7BF4756F8C1ADF17F209C"
 
 待加签串：
-appId=66A095861BAE55F8735199DBC45D3E8E&data={"Atest2":"test2","atest2":"test2","test1":"test1"}&signType=SHA256&timestamp=1608904438&version=1&key=43E554621FF7BF4756F8C1ADF17F209C
+appid=66A095861BAE55F8735199DBC45D3E8E&data={"Atest2":"test2","atest2":"test2","test1":"test1"}&sign_type=SHA256&timestamp=1608948188&version=1&key=43E554621FF7BF4756F8C1ADF17F209C
 
 SHA256加签结果：
-"630112a8597ab7b834586d4b58bb84cd59ea57234dcb22195023c54ea5ceb9e2"
+"fa72d34eafea3639b0a207bdd7ceb49586f4be92e58ee97b6453b696b0edb781"
 
 base64后结果：
-"NjMwMTEyYTg1OTdhYjdiODM0NTg2ZDRiNThiYjg0Y2Q1OWVhNTcyMzRkY2IyMjE5NTAyM2M1NGVhNWNlYjllMg=="
+"ZmE3MmQzNGVhZmVhMzYzOWIwYTIwN2JkZDdjZWI0OTU4NmY0YmU5MmU1OGVlOTdiNjQ1M2I2OTZiMGVkYjc4MQ=="
 ```
 
 返回结果
@@ -163,18 +164,318 @@ base64后结果：
 
 #### 2. 交易提交接口
 
+请求URL
+
+> http://<host>:<port>/api/deal
+
+请求方式
+
+> POST
+
+输入参数（data字段下）
+
+| 参数        | 类型   | 说明                         |
+| ----------- | ------ | ---------------------------- |
+| exchange_id | string | 当前提交者的ID（链用户公钥） |
+| assets_id   | string | 资产ID                       |
+| data        | string | 交易数据                     |
+| refer       | string | 参考数据（可为空）           |
+
+返回结果
+
+| 参数 | 类型   | 说明                                    |
+| ---- | ------ | --------------------------------------- |
+| code | int    | 状态代码，0 表示成功，非0 表示出错      |
+| msg  | string | 成功时返回success；出错时，返回出错信息 |
+| data | json   | 无                                      |
+
 
 
 #### 3. 请求授权接口
+
+请求URL
+
+> http://<host>:<port>/api/auth_request
+
+请求方式
+
+> POST
+
+输入参数（data字段下）
+
+| 参数             | 类型   | 说明                         |
+| ---------------- | ------ | ---------------------------- |
+| exchange_id      | string | 当前提交者的ID（链用户公钥） |
+| deal_id          | string | 要查看的交易的区块ID         |
+| from_exchange_id | string | 交易提交者的ID               |
+
+返回结果
+
+| 参数 | 类型   | 说明                                    |
+| ---- | ------ | --------------------------------------- |
+| code | int    | 状态代码，0 表示成功，非0 表示出错      |
+| msg  | string | 成功时返回success；出错时，返回出错信息 |
+| data | json   | 无                                      |
 
 
 
 #### 4. 响应授权接口
 
+请求URL
+
+> http://<host>:<port>/api/auth_response
+
+请求方式
+
+> POST
+
+输入参数（data字段下）
+
+| 参数        | 类型   | 说明                         |
+| ----------- | ------ | ---------------------------- |
+| exchange_id | string | 当前提交者的ID（链用户公钥） |
+| auth_id     | string | 请求授权的区块ID             |
+
+返回结果
+
+| 参数 | 类型   | 说明                                    |
+| ---- | ------ | --------------------------------------- |
+| code | int    | 状态代码，0 表示成功，非0 表示出错      |
+| msg  | string | 成功时返回success；出错时，返回出错信息 |
+| data | json   | 无                                      |
+
 
 
 #### 5. 查询接口
 
+**（1）查询所有历史交易**
+
+请求URL
+
+> http://<host>:<port>/api/query_deals
+
+请求方式
+
+> POST
+
+输入参数（data字段下）
+
+| 参数        | 类型   | 说明                         |
+| ----------- | ------ | ---------------------------- |
+| exchange_id | string | 当前提交者的ID（链用户公钥） |
+
+返回结果
+
+| 参数 | 类型   | 说明                                    |
+| ---- | ------ | --------------------------------------- |
+| code | int    | 状态代码，0 表示成功，非0 表示出错      |
+| msg  | string | 成功时返回success；出错时，返回出错信息 |
+| data | json   | 交易列表                                |
+
+
+
+**（2）查询所有授权请求和授权响应**
+
+请求URL
+
+> http://<host>:<port>/api/query_auths
+
+请求方式
+
+> POST
+
+输入参数（data字段下）
+
+| 参数        | 类型   | 说明                         |
+| ----------- | ------ | ---------------------------- |
+| exchange_id | string | 当前提交者的ID（链用户公钥） |
+
+返回结果
+
+| 参数 | 类型   | 说明                                    |
+| ---- | ------ | --------------------------------------- |
+| code | int    | 状态代码，0 表示成功，非0 表示出错      |
+| msg  | string | 成功时返回success；出错时，返回出错信息 |
+| data | json   | 授权列表                                |
+
+> 返回的结果包括：
+>
+> 1. 其他链用户请求查看当前链用户交易数据的授权请求；
+> 2. 当前链用户请求查看其他链用户交易数据，对方返回的授权响应。
+>
+> 当前链用户提交的授权请求和授权响应，会被对方链用户检索到，自己检索不到。
+
+
+
+**（3）按资产ID查询历史交易**
+
+请求URL
+
+> http://<host>:<port>/api/query_by_assets
+
+请求方式
+
+> POST
+
+输入参数（data字段下）
+
+| 参数        | 类型   | 说明                         |
+| ----------- | ------ | ---------------------------- |
+| exchange_id | string | 当前提交者的ID（链用户公钥） |
+| assets_id   | string | 资产ID                       |
+
+返回结果
+
+| 参数 | 类型   | 说明                                    |
+| ---- | ------ | --------------------------------------- |
+| code | int    | 状态代码，0 表示成功，非0 表示出错      |
+| msg  | string | 成功时返回success；出错时，返回出错信息 |
+| data | json   | 相同资产ID的交易列表                    |
+
+> 说明：
+>
+> 按资产ID查询时没有限制链用户范围。因此，如果链用户之间使用统一的资产ID，并在多个链用户之间发生交易，则返回的数据可能包含不用链用户的交易数据。当前链用户解密自己交易的加密数据，其他链用户的加密数据需要提交授权请求并授权后才能看到解密数据。
+
+
+
+**（4）按参考数据查询历史交易**
+
+请求URL
+
+> http://<host>:<port>/api/query_by_refer
+
+请求方式
+
+> POST
+
+输入参数（data字段下）
+
+| 参数        | 类型   | 说明                         |
+| ----------- | ------ | ---------------------------- |
+| exchange_id | string | 当前提交者的ID（链用户公钥） |
+| refer       | string | 参考数据                     |
+
+返回结果
+
+| 参数 | 类型   | 说明                                    |
+| ---- | ------ | --------------------------------------- |
+| code | int    | 状态代码，0 表示成功，非0 表示出错      |
+| msg  | string | 成功时返回success；出错时，返回出错信息 |
+| data | json   | 相同refer的交易列表                     |
+
+
+
+**（5）查询指定区块ID的交易内容**
+
+请求URL
+
+> http://<host>:<port>/api/query_block
+
+请求方式
+
+> POST
+
+输入参数（data字段下）
+
+| 参数        | 类型   | 说明                         |
+| ----------- | ------ | ---------------------------- |
+| exchange_id | string | 当前提交者的ID（链用户公钥） |
+| block_id    | string | 区块ID                       |
+
+返回结果
+
+| 参数 | 类型   | 说明                                    |
+| ---- | ------ | --------------------------------------- |
+| code | int    | 状态代码，0 表示成功，非0 表示出错      |
+| msg  | string | 成功时返回success；出错时，返回出错信息 |
+| data | json   | 指定区块的交易/授权数据                 |
+
+> 说明：
+>
+> 按区块ID查询时没有限制链用户范围。
+
+
+
+**（6）查询指定区块ID的原始区块数据**
+
+请求URL
+
+> http://<host>:<port>/api/query_raw_block
+
+请求方式
+
+> POST
+
+输入参数（data字段下）
+
+| 参数        | 类型   | 说明                         |
+| ----------- | ------ | ---------------------------- |
+| exchange_id | string | 当前提交者的ID（链用户公钥） |
+| block_id    | string | 区块ID                       |
+
+返回结果
+
+| 参数 | 类型   | 说明                                    |
+| ---- | ------ | --------------------------------------- |
+| code | int    | 状态代码，0 表示成功，非0 表示出错      |
+| msg  | string | 成功时返回success；出错时，返回出错信息 |
+| data | json   | 指定区块的原始区块数据                  |
+
+> 说明：
+>
+> 按区块ID查询时没有限制链用户范围。
+
 
 
 #### 6. IPFS接口
+
+**（1） 上传数据到IPFS**
+
+请求URL
+
+> http://<host>:<port>/api/ipfs_upload
+
+请求方式
+
+> POST
+
+输入参数（data字段下）
+
+| 参数        | 类型   | 说明             |
+| ----------- | ------ | ---------------- |
+| exchange_id | string | base64编码的数据 |
+
+返回结果
+
+| 参数 | 类型   | 说明                                    |
+| ---- | ------ | --------------------------------------- |
+| code | int    | 状态代码，0 表示成功，非0 表示出错      |
+| msg  | string | 成功时返回success；出错时，返回出错信息 |
+| data | json   | IPFS文件hash值                          |
+
+
+
+**（2） 从IPFS下载数据**
+
+请求URL
+
+> http://<host>:<port>/api/ipfs_download
+
+请求方式
+
+> POST
+
+输入参数（data字段下）
+
+| 参数        | 类型   | 说明             |
+| ----------- | ------ | ---------------- |
+| hash | string | IPFS文件hash值 |
+
+返回结果
+
+| 参数 | 类型           | 说明                                    |
+| ---- | -------------- | --------------------------------------- |
+| code | int            | 状态代码，0 表示成功，非0 表示出错      |
+| msg  | string         | 成功时返回success；出错时，返回出错信息 |
+| data | base64编码的数据 |                                         |
+
