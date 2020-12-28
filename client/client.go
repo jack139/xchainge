@@ -41,17 +41,33 @@ type User struct {
 	CryptoPair cryptoPair     // 密钥协商使用
 }
 
+// 生成用户环境
+func GetMe(path string) (*User, error) {
+	user, err := LoadOrGenUserKey(path)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
 
 // 从文件装入key
-func LoadOrGenUserKey() (*User, error) {
-	if cmn.FileExists(KEYFILENAME) {
-		uk, err := loadUserKey()
+func LoadOrGenUserKey(path string) (*User, error) {
+	keyFilePath := path + "/" + KEYFILENAME
+	if cmn.FileExists(keyFilePath) {
+		fmt.Println(keyFilePath + "exists.")
+		uk, err := loadUserKey(keyFilePath)
 		if err != nil {
 			return nil, err
 		}
 		return uk, nil
 	}
-	//fmt.Println("userkey file not exists")
+
+	// 建目录
+	if err := cmn.EnsureDir(path, 0700); err != nil {
+		return nil, err
+	}
+	// 生成新的密钥文件
+	fmt.Println("Make new key file: " + keyFilePath)	
 	uk := new(User)
 	uk.SignKey = ed25519.GenPrivKey()
 	pubKey, priKey, err := box.GenerateKey(crypto_rand.Reader)
@@ -63,23 +79,23 @@ func LoadOrGenUserKey() (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = ioutil.WriteFile(KEYFILENAME, jsonBytes, 0644)
+	err = ioutil.WriteFile(keyFilePath, jsonBytes, 0644)
 	if err != nil {
 		return nil, err
 	}
 	return uk, nil
 }
 
-func loadUserKey() (*User, error) {
+func loadUserKey(keyFilePath string) (*User, error) {
 	//copy(privKey[:], bz)
-	jsonBytes, err := ioutil.ReadFile(KEYFILENAME)
+	jsonBytes, err := ioutil.ReadFile(keyFilePath)
 	if err != nil {
 		return nil, err
 	}
 	uk := new(User)
 	err = cdc.UnmarshalJSON(jsonBytes, uk)
 	if err != nil {
-		return nil, fmt.Errorf("Error reading UserKey from %v: %v", KEYFILENAME, err)
+		return nil, fmt.Errorf("Error reading UserKey from %v: %v", keyFilePath, err)
 	}
 	return uk, nil
 }

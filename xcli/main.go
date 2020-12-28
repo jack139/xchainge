@@ -28,10 +28,28 @@ var (
 		Short: "xchainge client",
 		Long:  "xcli is a client tool for xchainge",
 	}
+	initCmd = &cobra.Command{ // 生成key
+		Use:   "init",
+		Short: "make user key",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			path, _ := cmd.Flags().GetString("home")
+			// 如果 path不存在，会创建密钥文件
+			_, err := client.GetMe(path)
+			if err!=nil {
+				return err
+			}
+			return nil
+		},
+	}
 	dealCmd = &cobra.Command{	// 交易上链操作
 		Use:   "deal",
 		Short: "make a deal",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			path, _ := cmd.Flags().GetString("home")
+			me, err := client.GetMe(path)
+			if err!=nil {
+				return err
+			}
 			if len(args) < 4 {
 				return errors.New("need more parameters")
 			}
@@ -46,6 +64,11 @@ var (
 		Use:   "authReq",
 		Short: "Request authorization",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			path, _ := cmd.Flags().GetString("home")
+			me, err := client.GetMe(path)
+			if err!=nil {
+				return err
+			}
 			if len(args) < 2 {
 				return errors.New("need more parameters")
 			}
@@ -58,6 +81,11 @@ var (
 		Use:   "authResp",
 		Short: "Respond to authorization",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			path, _ := cmd.Flags().GetString("home")
+			me, err := client.GetMe(path)
+			if err!=nil {
+				return err
+			}
 			if len(args) == 0 {
 				return errors.New("need more parameters")
 			}
@@ -70,6 +98,11 @@ var (
 		Use:   "queryDeal",
 		Short: "query deals' history of exchange",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			path, _ := cmd.Flags().GetString("home")
+			me, err := client.GetMe(path)
+			if err!=nil {
+				return err
+			}
 			respBytes, err := me.Query("deal", "_")
 			if err==nil {
 				fmt.Printf("Deal ==> %s\n", respBytes)
@@ -82,6 +115,11 @@ var (
 		Use:   "queryAuth",
 		Short: "query requests of authorization",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			path, _ := cmd.Flags().GetString("home")
+			me, err := client.GetMe(path)
+			if err!=nil {
+				return err
+			}
 			respBytes, err := me.Query("auth", "_")
 			if err==nil {
 				fmt.Printf("Auth ==> %s\n", respBytes)
@@ -94,6 +132,11 @@ var (
 		Use:   "queryAssets",
 		Short: "query deals' history of Assets",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			path, _ := cmd.Flags().GetString("home")
+			me, err := client.GetMe(path)
+			if err!=nil {
+				return err
+			}
 			if len(args) == 0 {
 				return errors.New("need more parameters")
 			}
@@ -110,6 +153,11 @@ var (
 		Use:   "queryRefer",
 		Short: "query deals' history of Refer",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			path, _ := cmd.Flags().GetString("home")
+			me, err := client.GetMe(path)
+			if err!=nil {
+				return err
+			}
 			if len(args) == 0 {
 				return errors.New("need more parameters")
 			}
@@ -126,6 +174,11 @@ var (
 		Use:   "queryTx",
 		Short: "query deals by DealID",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			path, _ := cmd.Flags().GetString("home")
+			me, err := client.GetMe(path)
+			if err!=nil {
+				return err
+			}
 			if len(args) < 2 {
 				return errors.New("need more parameters")
 			}
@@ -155,12 +208,27 @@ var (
 )
 
 func init() {
-	user, err := client.LoadOrGenUserKey()
-	if err != nil {
-		panic(err)
-	}
-	me = user
+	initCmd.Flags().StringP("home", "", "", "密钥文件路径");
+	dealCmd.Flags().StringP("home", "", "", "密钥文件路径");
+	authRequestCmd.Flags().StringP("home", "", "", "密钥文件路径")
+	authResponseCmd.Flags().StringP("home", "", "", "密钥文件路径")
+	queryDealCmd.Flags().StringP("home", "", "", "密钥文件路径")
+	queryAssetsCmd.Flags().StringP("home", "", "", "密钥文件路径")
+	queryReferCmd.Flags().StringP("home", "", "", "密钥文件路径")
+	queryAuthCmd.Flags().StringP("home", "", "", "密钥文件路径")
+	queryTxCmd.Flags().StringP("home", "", "", "密钥文件路径")
 
+	initCmd.MarkFlagRequired("home")
+	dealCmd.MarkFlagRequired("home")
+	authRequestCmd.MarkFlagRequired("home")
+	authResponseCmd.MarkFlagRequired("home")
+	queryDealCmd.MarkFlagRequired("home")
+	queryAssetsCmd.MarkFlagRequired("home")
+	queryReferCmd.MarkFlagRequired("home")
+	queryAuthCmd.MarkFlagRequired("home")
+	queryTxCmd.MarkFlagRequired("home")
+
+	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(dealCmd)
 	rootCmd.AddCommand(authRequestCmd)
 	rootCmd.AddCommand(authResponseCmd)
@@ -170,6 +238,7 @@ func init() {
 	rootCmd.AddCommand(queryAuthCmd)
 	rootCmd.AddCommand(queryTxCmd)
 	rootCmd.AddCommand(httpCmd)
+
 }
 
 func main() {
