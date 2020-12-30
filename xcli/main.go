@@ -34,7 +34,7 @@ var (
 		RunE: func(cmd *cobra.Command, args []string) error {
 			path, _ := cmd.Flags().GetString("home")
 			// 如果 path不存在，会创建密钥文件
-			_, err := client.GetMe(path)
+			_, err := client.GenUserKey(path)
 			if err!=nil {
 				return err
 			}
@@ -192,6 +192,28 @@ var (
 		},
 	}
 
+	queryRawCmd = &cobra.Command{	// 查询 指定raw block
+		Use:   "queryRaw",
+		Short: "query block raw data by DealID",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			path, _ := cmd.Flags().GetString("home")
+			me, err := client.GetMe(path)
+			if err!=nil {
+				return err
+			}
+			if len(args) < 2 {
+				return errors.New("need more parameters")
+			}
+			exchangeId := args[0]
+			realId := args[1]
+			respBytes, err := me.QueryRawBlock(exchangeId, realId)
+			if err==nil {
+				fmt.Printf("Raw ==> %s\n", respBytes)
+			}
+			return err
+		},
+	}
+
 	httpCmd = &cobra.Command{	// 启动http服务
 		Use:   "http",
 		Short: "start http service",
@@ -217,6 +239,7 @@ func init() {
 	queryReferCmd.Flags().StringP("home", "", "", "密钥文件路径")
 	queryAuthCmd.Flags().StringP("home", "", "", "密钥文件路径")
 	queryTxCmd.Flags().StringP("home", "", "", "密钥文件路径")
+	queryRawCmd.Flags().StringP("home", "", "", "密钥文件路径")
 
 	initCmd.MarkFlagRequired("home")
 	dealCmd.MarkFlagRequired("home")
@@ -227,6 +250,7 @@ func init() {
 	queryReferCmd.MarkFlagRequired("home")
 	queryAuthCmd.MarkFlagRequired("home")
 	queryTxCmd.MarkFlagRequired("home")
+	queryRawCmd.MarkFlagRequired("home")
 
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(dealCmd)
@@ -237,6 +261,7 @@ func init() {
 	rootCmd.AddCommand(queryReferCmd)
 	rootCmd.AddCommand(queryAuthCmd)
 	rootCmd.AddCommand(queryTxCmd)
+	rootCmd.AddCommand(queryRawCmd)
 	rootCmd.AddCommand(httpCmd)
 
 }

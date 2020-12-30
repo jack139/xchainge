@@ -68,6 +68,35 @@ func queryTx(addr []byte, exchangeId, idStr string) (*types.Transx, error) {
 	}
 }
 
+// 链上查询指定 ID 的交易数据
+// xcli queryRaw dcfe656c-6c65-45e7-9e94-f082a068a93d
+func (me *User) QueryRawBlock(exchangeId, idStr string) ([]byte, error) {
+	addr, _ := cdc.MarshalJSON(*me.CryptoPair.PubKey)
+
+	var buf bytes.Buffer
+	buf.WriteString("/")
+	buf.Write(addr)
+	buf.WriteString("/query/raw")
+	//获得拼接后的字符串
+	path := buf.String()
+	if exchangeId!="_" {  // 用户公钥需要加双引号
+		exchangeId = "\"" + exchangeId + "\""	
+	}
+
+	// req.Data 格式： ["用户公钥", "DealID"]
+	reqBytes, _ := cdc.MarshalJSON([2][]byte{[]byte(exchangeId), []byte(idStr)})
+
+	rsp, err := cli.ABCIQuery(ctx, path, reqBytes)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	data := rsp.Response.Value
+
+	return data, nil
+}
+
 
 // 链上查询  category取值： deal, auth, assets, refer
 // deal 和 auth 可以带公钥，查其他人的 
@@ -78,6 +107,9 @@ func (me *User) Query(category, queryContent string) ([]byte, error) {
 
 	var respList []types.RespQuery
 	txList, err := query(addr, category, queryContent)
+	if err!=nil {
+		return nil, err
+	}
 
 	for _, tx := range *txList {
 		respQ := txToResp(me, &tx)

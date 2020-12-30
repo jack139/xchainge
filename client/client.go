@@ -43,23 +43,24 @@ type User struct {
 
 // 生成用户环境
 func GetMe(path string) (*User, error) {
-	user, err := LoadOrGenUserKey(path)
-	if err != nil {
-		return nil, err
-	}
-	return user, nil
-}
-
-// 从文件装入key
-func LoadOrGenUserKey(path string) (*User, error) {
 	keyFilePath := path + "/" + KEYFILENAME
 	if cmn.FileExists(keyFilePath) {
-		fmt.Println(keyFilePath + "exists.")
+		fmt.Printf("Found keyfile: %s\n", keyFilePath)
 		uk, err := loadUserKey(keyFilePath)
 		if err != nil {
 			return nil, err
 		}
 		return uk, nil
+	}
+
+	return nil, fmt.Errorf("Keyfile does not exist!")
+}
+
+// 从文件装入key
+func GenUserKey(path string) (*User, error) {
+	keyFilePath := path + "/" + KEYFILENAME
+	if cmn.FileExists(keyFilePath) {
+		return nil, fmt.Errorf("Keyfile already exists!")
 	}
 
 	// 建目录

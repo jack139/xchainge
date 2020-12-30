@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"bytes"
 	tmtypes "github.com/tendermint/tendermint/abci/types"
+	tmtypes2 "github.com/tendermint/tendermint/types"
 )
 
 
@@ -37,6 +38,7 @@ func getMatchMap(submatches []string, groupNames []string) map[string]string {
 	检索 所有 auth 块		/"<pubkey>"/query/auth
 	检索 所有 deal 块		/"<pubkey>"/query/deal
 	检索 指定 deal/auth 块	/"<pubkey>"/query/tx
+	检索 指定 block raw data	/"<pubkey>"/query/raw
 */
 
 
@@ -218,6 +220,30 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 			rsp.Value = nil
 		}
 
+	case "raw": // 制定ID的 block raw data
+		var qData [2][]byte
+
+		// req.Data 格式： ["用户公钥", "DealID"]
+		cdc.UnmarshalJSON(req.Data, &qData)
+
+		if string(qData[0])=="_" {  //  查询自己的交易记录
+			qData[0] = exchangeId
+		}
+
+		fmt.Printf("--> %s %s\n", qData[0], qData[1])
+
+		// 文件key, 找到链头
+		rsp.Log = "query raw data"
+
+		block := queryRawBlock(app, qData[0], qData[1])
+
+		if block!=nil {
+			respBytes, _ := cdc.MarshalJSON(*block)
+			rsp.Value = respBytes
+		} else {
+			rsp.Value = nil
+		}
+
 	case "check_auth_resp": // 检查 授权请求（authID） 是否已进行响应
 		var qData [2][]byte
 
@@ -268,7 +294,7 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 }
 
 
-func queryTx(app *App ,exchangeId, dealId []byte) (respTx *types.Transx) {
+func queryTx(app *App, exchangeId, dealId []byte) (respTx *types.Transx) {
 	db := app.state.db
 
 	// 找到链头
@@ -295,6 +321,44 @@ func queryTx(app *App ,exchangeId, dealId []byte) (respTx *types.Transx) {
 			if ok {
 				if auth.ID.String()==string(dealId) {
 					respTx = &tx
+					break
+				}
+			}
+		}
+
+		// 在blcok链上找下一个
+		blockLinkKey := blockPrefixKey("exchange", heightInt)
+		height = FindKey(db, blockLinkKey)
+	}
+
+	return
+}
+
+func queryRawBlock(app *App, exchangeId, dealId []byte) (block *tmtypes2.Block) {
+	db := app.state.db
+
+	// 找到链头
+	linkKey := exhcangePrefixKey(exchangeId)
+	height := FindKey(db, linkKey)  // 这里 height 返回是 []byte
+
+	for ;len(height)!=0; {
+		// 高度转换为int64
+		heightInt := ByteArrayToInt64(height)
+		// 获取区块内容
+		block = GetBlock(heightInt)
+
+		var tx types.Transx
+		cdc.UnmarshalJSON(block.Data.Txs[0], &tx)
+
+		deal, ok := tx.Payload.(*types.Deal)	// 交易块
+		if ok {
+			if deal.ID.String()==string(dealId) {
+				break
+			}
+		} else {  // 授权块，没有 refer
+			auth, ok := tx.Payload.(*types.Auth)	// 授权块
+			if ok {
+				if auth.ID.String()==string(dealId) {
 					break
 				}
 			}
