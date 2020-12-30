@@ -15,13 +15,12 @@ func doNonthing(ctx *fasthttp.RequestCtx) {
 	content := ctx.PostBody()
 
 	// 验签
-	data, err := checkSign(content)
+	data, _, err := checkSign(content)
 	if err!=nil {
-		fmt.Println("Error: ", err.Error())
 		respError(ctx, 9000, err.Error())
 		return
 	}
 	fmt.Printf("%v\n", *data)
 
-	respJson(ctx, *data)
+	respJson(ctx, data)
 }

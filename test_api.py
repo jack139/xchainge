@@ -27,19 +27,22 @@ if __name__ == '__main__':
         'version'  : '1',
         'sign_type' : 'SHA256', 
         'data'     : {
-            'test1'    : 'test1',
-            'atest2'    : 'test2',
-            'Atest2'    : 'test2',
+            'exchange_id'    : "qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=",
+            'assets_id'    : '123',
+            'refer'    : 'yyy',
+            'data'     : 'zzzzz',
+            'block_id' : '0f19b687-b83d-4071-a346-d69bf5a8ff6b',
+            'action' : 1,
         }
     }
 
-    appid = '66A095861BAE55F8735199DBC45D3E8E'
+    appid = '19E179E5DC29C05E65B90CDE57A1C7E5'
     unixtime = int(time.time())
     body['timestamp'] = unixtime
     body['appid'] = appid
 
     param_str = gen_param_str(body)
-    sign_str = '%s&key=%s' % (param_str, '43E554621FF7BF4756F8C1ADF17F209C')
+    sign_str = '%s&key=%s' % (param_str, 'UgM13IPx/BkwfQo8jceLq1CiXlT3lm4WLZ6K6TMR5bRueBGgTDVAv7ZLdBooTZWm2ixLaNitCW91NHW06h8VQw==')
 
     if body['sign_type'] == 'SHA256':
         sha256 = hashlib.sha256(sign_str.encode('utf-8')).hexdigest().encode('utf-8')
@@ -60,7 +63,7 @@ if __name__ == '__main__':
     pool = urllib3.PoolManager(num_pools=2, timeout=180, retries=False)
 
     host = 'http://%s:%s'%(hostname, port)
-    url = host+'/test'
+    url = host+'/api/deal'
 
     start_time = datetime.now()
     r = pool.urlopen('POST', url, body=body)
