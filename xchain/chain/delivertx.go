@@ -8,6 +8,7 @@ package chain
 import (
 	"xchainge/types"
 
+	"fmt"
 	tmtypes "github.com/tendermint/tendermint/abci/types"
 )
 
@@ -24,9 +25,12 @@ func (app *App) DeliverTx(req tmtypes.RequestDeliverTx) (rsp tmtypes.ResponseDel
 	// 数据上链
 	deal, ok := tx.Payload.(*types.Deal)	// 交易
 	if ok {
-		switch deal.Action {
-		case 0x01, 0x02, 0x03:
+		switch {
+		case deal.Action>0 && deal.Action<=3: // 交易链
 			rsp.Log = actionMessage[deal.Action]
+			// 业务逻辑放这里
+		case deal.Action>10 && deal.Action<=20: // 为测试链保留
+			rsp.Log = fmt.Sprintf("deal action=%d", deal.Action)
 			// 业务逻辑放这里
 
 		default:

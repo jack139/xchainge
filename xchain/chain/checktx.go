@@ -23,8 +23,10 @@ func (app *App) isValidDeal(deal *types.Deal) error {
 		return fmt.Errorf("bad parameters") // 参数问题
 	}
 
-	switch m.Action {
-	case 0x01, 0x02, 0x03: 
+	switch {
+	case m.Action>0 && m.Action<=3: // 交易链
+		{}
+	case m.Action>10 && m.Action<=20: // 为测试链保留
 		{}
 	default:
 		return fmt.Errorf("weird deal command")
