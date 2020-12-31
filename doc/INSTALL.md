@@ -1,10 +1,29 @@
 
 ## 多节点测试
 
+
+### 安装LevelDB
+```
+yum -y install snappy-devel
+wget https://github.com/google/leveldb/archive/v1.20.tar.gz && \
+  tar -zxvf v1.20.tar.gz && \
+  cd leveldb-1.20/ && \
+  make && \
+  sudo cp -r out-static/lib* out-shared/lib* /usr/local/lib/ && \
+  cd include/ && \
+  sudo cp -r leveldb /usr/local/include/ && \
+  sudo ldconfig && \
+  rm -f v1.20.tar.gz
+```
+
+
+
 ### 编译
+
 ```shell
 make
 ```
+
 
 
 ### 初始化
@@ -14,17 +33,26 @@ build/xchain init --home n1
 build/xchain init --home n2
 ```
 
+
+
 #### 复制创世块
+
 ```shell
 cp n1/config/genesis.json n2/config/
 ```
 
+
+
 #### 获取n1节点id
+
 ```shell
 build/xchain show_node_id --home n1
 ```
 
+
+
 #### 修改n2/config/config.toml
+
 ```toml
 proxy_app = "tcp://127.0.0.1:36658"
 laddr = "tcp://127.0.0.1:36657"
@@ -48,7 +76,10 @@ build/xcli init --home users/user1
 build/xcli http 8080 users
 ```
 
+
+
 ### 提交交易
+
 ```shell
 build/xcli deal --home users/user1 1 123 xxxx yyy
 ```
@@ -58,12 +89,18 @@ build/xcli deal --home users/user1 1 123 xxxx yyy
 build/xcli authReq --home users/user1 qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs= eea272cb-74ad-4289-aac4-07f84d3284dc
 ```
 
+
+
 ### 响应授权
+
 ```shell
 build/xcli authResp --home users/user1 6b292c1d-2963-4308-86cb-99fc41c9cd45
 ```
 
+
+
 ### 查询交易
+
 ```shell
 build/xcli queryDeal --home users/user1
 build/xcli queryAuth --home users/user1
@@ -73,12 +110,18 @@ build/xcli queryTx --home users/user1 qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqF
 build/xcli queryRaw --home users/user1 qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs= eea272cb-74ad-4289-aac4-07f84d3284dc
 ```
 
+
+
 ### 查询验证节点信息
+
 ```shell
 curl localhost:26657/validators
 ```
 
+
+
 ### 查询网络信息
+
 ```shell
 curl localhost:26657/net_info
 ```
