@@ -105,7 +105,7 @@ func (me *User) QueryRawBlock(exchangeId, idStr string) ([]byte, error) {
 func (me *User) Query(category, queryContent string) ([]byte, error) {
 	addr, _ := cdc.MarshalJSON(*me.CryptoPair.PubKey)
 
-	var respList []types.RespQuery
+	var respList []map[string]interface{}
 	txList, err := query(addr, category, queryContent)
 	if err!=nil {
 		return nil, err

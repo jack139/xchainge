@@ -103,7 +103,9 @@ func loadUserKey(keyFilePath string) (*User, error) {
 
 
 // 交易结构转换为返回值的结构，能解密就解密
-func txToResp(me *User, tx *types.Transx) *types.RespQuery {
+func txToResp(me *User, tx *types.Transx) *map[string]interface{} {
+	var respMap = make(map[string]interface{})
+
 	auth, ok := (*tx).Payload.(*types.Auth)	// 授权块
 	if ok {
 		//fmt.Printf("auth => %v\n", auth)
@@ -130,16 +132,16 @@ func txToResp(me *User, tx *types.Transx) *types.RespQuery {
 
 		exchangeId, _ := cdc.MarshalJSON(auth.FromExchangeID)
 		exchangeId2, _ := cdc.MarshalJSON(auth.ToExchangeID)
-		return &types.RespQuery{
-			Type           : "AUTH",
-			ID             : auth.ID.String(),
-			ExchangeId     : string(exchangeId[1 : len(exchangeId)-1]), // 去掉两边引号
-			AuthExchangeId : string(exchangeId2[1 : len(exchangeId2)-1]),
-			Data           : data,
-			Refer          : auth.DealID.String(), // 用refer返回dealID
-			Action         : auth.Action,
-			SendTime       : *(*tx).SendTime,
-		}
+		respMap["type"] = "AUTH"
+		respMap["id"]  = auth.ID.String()
+		respMap["exchange_id"]  = string(exchangeId[1 : len(exchangeId)-1]) // 去掉两边引号
+		respMap["auth_exchange_id"]  = string(exchangeId2[1 : len(exchangeId2)-1])
+		respMap["data"]  = data
+		respMap["refer"]  = auth.DealID.String() // 用refer返回dealID
+		respMap["action"]  = auth.Action
+		respMap["send_time"]  = *(*tx).SendTime
+		return &respMap
+
 	} else { // category == deal, assets, refer
 		deal, ok := (*tx).Payload.(*types.Deal) // 交易块
 		if ok {
@@ -170,16 +172,16 @@ func txToResp(me *User, tx *types.Transx) *types.RespQuery {
 			}
 
 			exchangeId, _ := cdc.MarshalJSON(deal.ExchangeID)
-			return &types.RespQuery{
-				Type       : "DEAL",
-				ID         : deal.ID.String(),
-				ExchangeId : string(exchangeId[1 : len(exchangeId)-1]), // 去掉两边引号
-				AssetsId   : string(deal.AssetsID),
-				Data       : data,
-				Refer      : string(deal.Refer),
-				Action     : deal.Action,
-				SendTime   : *(*tx).SendTime,
-			}
+			respMap["type"] = "DEAL"
+			respMap["id"] = deal.ID.String()
+			respMap["exchange_id"] = string(exchangeId[1 : len(exchangeId)-1]) // 去掉两边引号
+			respMap["assets_id"] = string(deal.AssetsID)
+			respMap["data"] = data
+			respMap["refer"] = string(deal.Refer)
+			respMap["action"] = deal.Action
+			respMap["send_time"] = *(*tx).SendTime
+			return &respMap
+
 		}
 	}
 
