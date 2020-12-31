@@ -33,25 +33,19 @@ build/xchain init --home n1
 build/xchain init --home n2
 ```
 
-
-
-#### 复制创世块
+复制创世块
 
 ```shell
 cp n1/config/genesis.json n2/config/
 ```
 
-
-
-#### 获取n1节点id
+获取n1节点id
 
 ```shell
 build/xchain show_node_id --home n1
 ```
 
-
-
-#### 修改n2/config/config.toml
+修改n2/config/config.toml
 
 ```toml
 proxy_app = "tcp://127.0.0.1:36658"
@@ -60,18 +54,34 @@ laddr = "tcp://0.0.0.0:36656"
 persistent_peers = "b2c82964b2c67236f94a84aa19b0fda6e91869a0@127.0.0.1:26656"
 ```
 
-### 启动节点
-```shell
-build/xchain node --home n1 --consensus.create_empty_blocks=false
-build/xchain node --home n2 --consensus.create_empty_blocks=false
+修改各节点的config/config.toml
+
+```
+addr_book_strict = false
+create_empty_blocks = false
 ```
 
+
+
+### 启动节点
+
+```shell
+build/xchain node --home n1
+build/xchain node --home n2
+```
+
+
+
 ### 新建用户密钥
+
 ```
 build/xcli init --home users/user1
 ```
 
+
+
 ### 启动http服务
+
 ```
 build/xcli http 8080 users
 ```
@@ -84,7 +94,10 @@ build/xcli http 8080 users
 build/xcli deal --home users/user1 1 123 xxxx yyy
 ```
 
+
+
 ### 请求授权
+
 ```shell
 build/xcli authReq --home users/user1 qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs= eea272cb-74ad-4289-aac4-07f84d3284dc
 ```
