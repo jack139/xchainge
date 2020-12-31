@@ -39,13 +39,14 @@ if __name__ == '__main__':
         }
     }
 
-    appid = '19E179E5DC29C05E65B90CDE57A1C7E5'
+    secret = 'UgM13IPx/BkwfQo8jceLq1CiXlT3lm4WLZ6K6TMR5bRueBGgTDVAv7ZLdBooTZWm2ixLaNitCW91NHW06h8VQw=='
+    appid = hashlib.md5(secret.encode('utf-8')).hexdigest()
     unixtime = int(time.time())
     body['timestamp'] = unixtime
     body['appid'] = appid
 
     param_str = gen_param_str(body)
-    sign_str = '%s&key=%s' % (param_str, 'UgM13IPx/BkwfQo8jceLq1CiXlT3lm4WLZ6K6TMR5bRueBGgTDVAv7ZLdBooTZWm2ixLaNitCW91NHW06h8VQw==')
+    sign_str = '%s&key=%s' % (param_str, secret)
 
     if body['sign_type'] == 'SHA256':
         sha256 = hashlib.sha256(sign_str.encode('utf-8')).hexdigest().encode('utf-8')

@@ -10,7 +10,13 @@ import (
 
 
 /* 入口 */
-func RunServer(port string) {
+func RunServer(port string, userPath string) {
+	// 装入用户appid和secret
+	err := loadSecretKey(userPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	/* router */
 	r := router.New()
 	r.GET("/", index)

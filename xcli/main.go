@@ -215,13 +215,15 @@ var (
 	}
 
 	httpCmd = &cobra.Command{	// 启动http服务
-		Use:   "http",
+		Use:   "http <port> <user_path>",
 		Short: "start http service",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) == 0 {
+			if len(args) < 2 {
 				return errors.New("need port number")
 			} 
-			http.RunServer(args[0])
+			port := args[0]
+			userPath := args[1]
+			http.RunServer(port, userPath)
 			// 不会返回
 			return nil
 		},

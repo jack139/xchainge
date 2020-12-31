@@ -11,19 +11,39 @@ import (
 	"encoding/json"
 	"encoding/base64"
 	"crypto/sha256"
+	"crypto/md5"
+	"io/ioutil"
 	"github.com/valyala/fasthttp"
 )
 
-const (
-	keyFileRoot = "./"
-)
 
 /* appid : 密钥文件路径， secret 为 密钥文件签名 */
-var SECRET_KEY = map[string]string{
-	"19E179E5DC29C05E65B90CDE57A1C7E5" : "user1",
-	"66A095861BAE55F8735199DBC45D3E8E" : "user2",
-	"75C50F018B34AC0240915EC685F5961B" : "user3",
-	"3EA25569454745D01219080B779F021F" : "user4",
+var SECRET_KEY = make(map[string]*client.User)
+
+func loadSecretKey(path string) error{
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		return err
+	}
+
+	for _, f := range files {
+		// 用户keyfile在子目录下
+		if !f.IsDir(){
+			continue
+		}
+		// 装入 keyfile
+		u, err := client.GetMe(path + "/" + f.Name())
+		if err!=nil {
+			return err
+		}
+
+		secret := base64.StdEncoding.EncodeToString(u.SignKey.Bytes())
+	    data := []byte(secret)
+	    appid:=fmt.Sprintf("%x", md5.Sum(data))
+		SECRET_KEY[appid] = u // 保存用户信息
+	}
+
+	return nil
 }
 
 /* 返回值的 content-type */
@@ -101,18 +121,11 @@ func checkSign(content []byte) (*map[string]interface{}, *client.User, error) {
 		return nil, nil, fmt.Errorf("need data")
 	}	
 
-	// 取得 密钥文件 路径
-	secretPath, ok := SECRET_KEY[appId]
+	// 取得用户信息
+	me, ok := SECRET_KEY[appId]
 	if !ok {
 		return nil, nil, fmt.Errorf("wrong appId")
 	}
-
-	// 取得用户信息
-	me, err := client.GetMe(keyFileRoot+secretPath)
-	if err!=nil {
-		return nil, nil, err
-	}
-
 	// 获取 secret，用户密钥的签名串
 	secret := base64.StdEncoding.EncodeToString(me.SignKey.Bytes())
 

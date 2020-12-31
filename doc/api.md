@@ -96,11 +96,12 @@
 
 > 签名/验签算法：
 >
-> 1. 筛选，获取参数键值对，剔除sign_data参数。data参数按key升序排列进行json序列化。
-> 2. 排序，按key升序排序；data中json也按key升序排序。
-> 3. 拼接，按排序好的顺序拼接请求参数。
+> 1. appid和app_secret均从链用户密钥文件中```sign_key.value```字段生成：appid为```sign_key.value```做MD5（字母小写），app_secret既是```sign_key.value```字段。
+> 2. 筛选，获取参数键值对，剔除sign_data参数。data参数按key升序排列进行json序列化。
+> 3. 排序，按key升序排序；data中json也按key升序排序。
+> 4. 拼接，按排序好的顺序拼接请求参数。
 >
-> ```key1=value1&key2=value2&...&key=appSecret```，key=app_secret固定拼接在参数串末尾，app_secret需替换成应用渠道所分配的app_secret。
+> ```key1=value1&key2=value2&...&key=appSecret```，key=app_secret固定拼接在参数串末尾。
 >
 > 4. 签名，使用制定的算法进行加签获取二进制字节，使用 16进制进行编码Hex.encode得到签名串，然后base64编码。
 > 5. 验签，对收到的参数按1-4步骤签名，比对得到的签名串与提交的签名串是否一致。
