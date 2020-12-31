@@ -200,6 +200,36 @@ base64后结果：
 | msg  | string | 成功时返回success；出错时，返回出错信息 |
 | data | json   | 无                                      |
 
+请求示例
+
+```json
+{
+    "version": "1", 
+    "sign_type": "SHA256", 
+    "data": {
+        "assets_id": "123", 
+        "refer": "yyy", 
+        "data": "zzzzz", 
+        "action": 1
+    }, 
+    "timestamp": 1609384008, 
+    "appid": "dec213b6aced0336932e272f3faaf9e4", 
+    "sign_data": "MmRmOWIyOTNmNjgxMzBlMjU4ZDU3YjIwNDE4MDI2ZDJhNjFiMDhhMzUyOGI1MmE0YzY3YjZlODdlZjIxN2RiNQ=="
+}
+```
+
+返回示例
+
+```json
+{
+    "code": 0, 
+    "data": {
+        "data": null
+    }, 
+    "msg": "success"
+}
+```
+
 
 
 #### 3. 请求授权接口
@@ -227,6 +257,34 @@ base64后结果：
 | msg  | string | 成功时返回success；出错时，返回出错信息 |
 | data | json   | 无                                      |
 
+请求示例
+
+```json
+{
+    "version": "1", 
+    "sign_type": "SHA256", 
+    "data": {
+        "deal_id": "7adfe653-afc8-45d8-901a-e001fdbb102d", 
+        "from_exchange_id": "j9cIgmm17x0aLApf0i20UR7Pj34Ua/JwyWOuBGgYIFg="
+    }, 
+    "timestamp": 1609384238, 
+    "appid": "dec213b6aced0336932e272f3faaf9e4", 
+    "sign_data": "NzUxZTkwYmIzMjEwMzIzYzY5MmE2YTZmMDdlMTBjODc5Mjg2OTc1OWFkOTdmNDg4OTVlNzVkMTUyMWM1YWU1Ng=="
+}
+```
+
+返回示例
+
+```json
+{
+    "code": 0, 
+    "data": {
+        "data": null
+    }, 
+    "msg": "success"
+}
+```
+
 
 
 #### 4. 响应授权接口
@@ -252,6 +310,33 @@ base64后结果：
 | code | int    | 状态代码，0 表示成功，非0 表示出错      |
 | msg  | string | 成功时返回success；出错时，返回出错信息 |
 | data | json   | 无                                      |
+
+请求示例
+
+```json
+{
+    "version": "1", 
+    "sign_type": "SHA256", 
+    "data": {
+        "auth_id": "ef57fd9e-66c8-4d23-b142-8bc32b57bfcd"
+    }, 
+    "timestamp": 1609384388, 
+    "appid": "dec213b6aced0336932e272f3faaf9e4", 
+    "sign_data": "ZWUzYmMxMDQ2MjQyOTY4M2JhMmMzNTliZmM3YjQ4ZjYwNzM1YjRhODY0MDIxNTFkNDhlODkyNzFjNTRlYjJjNA=="
+}
+```
+
+返回示例
+
+```json
+{
+    "code": 0, 
+    "data": {
+        "data": null
+    }, 
+    "msg": "success"
+}
+```
 
 
 
@@ -280,6 +365,42 @@ base64后结果：
 | code | int    | 状态代码，0 表示成功，非0 表示出错      |
 | msg  | string | 成功时返回success；出错时，返回出错信息 |
 | data | json   | 交易列表                                |
+
+请求示例
+
+```json
+{
+    "version": "1", 
+    "sign_type": "SHA256", 
+    "data": {}, 
+    "timestamp": 1609384428, 
+    "appid": "dec213b6aced0336932e272f3faaf9e4", 
+    "sign_data": "N2IzZTBjOGE1NzZlMDM4YjY0Zjg2Y2YwN2NlMjc4ZjdjNWQyYjdkYWI4N2UyYWNmMDg1Y2E2M2YzYWYxMGMzNA=="
+}
+```
+
+返回示例
+
+```json
+{
+    "code": 0, 
+    "data": {
+        "deals": [
+            {
+                "action": 1, 
+                "assets_id": "123", 
+                "data": "zzzzz", 
+                "exchange_id": "qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=", 
+                "id": "59534f7d-db5b-4792-8937-09996638c3d4", 
+                "refer": "zzzzz", 
+                "send_time": "2020-12-31T03:06:48.535213018Z", 
+                "type": "DEAL"
+            }
+        ]
+    }, 
+    "msg": "success"
+}
+```
 
 
 
@@ -314,6 +435,52 @@ base64后结果：
 >
 > 当前链用户提交的授权请求和授权响应，会被对方链用户检索到，自己检索不到。
 
+请求示例
+
+```json
+{
+    "version": "1", 
+    "sign_type": "SHA256", 
+    "data": {}, 
+    "timestamp": 1609384479, 
+    "appid": "dec213b6aced0336932e272f3faaf9e4", 
+    "sign_data": "N2VmNTk2YThhMzFlNGU3MzlkYzVlYjhmOTg2ZGQzYWFhYTg1OTNkYTJiNmI1ZWUxMGUzMmIyYTgzMzAxMmY4OA=="
+}
+```
+
+返回示例
+
+```json
+{
+    "code": 0, 
+    "data": {
+        "auths": [
+            {
+                "action": 5, 
+                "auth_exchange_id": "qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=", 
+                "data": "xxx", 
+                "exchange_id": "j9cIgmm17x0aLApf0i20UR7Pj34Ua/JwyWOuBGgYIFg=", 
+                "id": "6037ce9d-fb6a-494c-9c6c-2ddc39762796", 
+                "refer": "7adfe653-afc8-45d8-901a-e001fdbb102d", 
+                "send_time": "2020-12-31T03:16:05.876390503Z", 
+                "type": "AUTH"
+            }, 
+            {
+                "action": 4, 
+                "auth_exchange_id": "j9cIgmm17x0aLApf0i20UR7Pj34Ua/JwyWOuBGgYIFg=", 
+                "data": "", 
+                "exchange_id": "qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=", 
+                "id": "ef57fd9e-66c8-4d23-b142-8bc32b57bfcd", 
+                "refer": "59534f7d-db5b-4792-8937-09996638c3d4", 
+                "send_time": "2020-12-31T03:12:06.064601793Z", 
+                "type": "AUTH"
+            }
+        ]
+    }, 
+    "msg": "success"
+}
+```
+
 
 
 **（3）按资产ID查询历史交易**
@@ -344,6 +511,44 @@ base64后结果：
 >
 > 按资产ID查询时没有限制链用户范围。因此，如果链用户之间使用统一的资产ID，并在多个链用户之间发生交易，则返回的数据可能包含不用链用户的交易数据。当前链用户解密自己交易的加密数据，其他链用户的加密数据需要提交授权请求并授权后才能看到解密数据。
 
+请求示例
+
+```json
+{
+    "version": "1", 
+    "sign_type": "SHA256", 
+    "data": {
+        "assets_id": "123"
+    }, 
+    "timestamp": 1609384684, 
+    "appid": "dec213b6aced0336932e272f3faaf9e4", 
+    "sign_data": "YTg4NjliYjA3NzA5NmE3YzRmNTBmODc4OGM3ZGMyNzUzN2JjYjlmM2VkNjkyOTdiZjljMzExNDEzMzRkZjgwMQ=="
+}
+```
+
+返回示例
+
+```json
+{
+    "code": 0, 
+    "data": {
+        "deals": [
+            {
+                "action": 1, 
+                "assets_id": "123", 
+                "data": "zzzzz", 
+                "exchange_id": "qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=", 
+                "id": "59534f7d-db5b-4792-8937-09996638c3d4", 
+                "refer": "zzzzz", 
+                "send_time": "2020-12-31T03:06:48.535213018Z", 
+                "type": "DEAL"
+            }
+        ]
+    }, 
+    "msg": "success"
+}
+```
+
 
 
 **（4）按参考数据查询历史交易**
@@ -369,6 +574,44 @@ base64后结果：
 | code | int    | 状态代码，0 表示成功，非0 表示出错      |
 | msg  | string | 成功时返回success；出错时，返回出错信息 |
 | data | json   | 相同refer的交易列表                     |
+
+请求示例
+
+```json
+{
+    "version": "1", 
+    "sign_type": "SHA256", 
+    "data": {
+        "refer": "zzzzz"
+	}, 
+    "timestamp": 1609384738, 
+    "appid": "dec213b6aced0336932e272f3faaf9e4", 
+    "sign_data": "ZGJkMmNhMmI2ZjY0MTM1MmI2YjIxYzkwN2MyODA4NjhhZDQ1ZDUwMTI4ZWVkNjY1ZmFiZGU5NzJmNmE0NDMxOQ=="
+}
+```
+
+返回示例
+
+```json
+{
+    "code": 0, 
+    "data": {
+        "deals": [
+            {
+                "action": 1, 
+                "assets_id": "123", 
+                "data": "zzzzz", 
+                "exchange_id": "qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=", 
+                "id": "59534f7d-db5b-4792-8937-09996638c3d4", 
+                "refer": "zzzzz", 
+                "send_time": "2020-12-31T03:06:48.535213018Z", 
+                "type": "DEAL"
+            }
+        ]
+    }, 
+    "msg": "success"
+}
+```
 
 
 
@@ -401,6 +644,43 @@ base64后结果：
 >
 > 按区块ID查询时没有限制链用户范围。
 
+请求示例
+
+```json
+{
+    "version": "1", 
+    "sign_type": "SHA256", 
+    "data": {
+        "exchange_id": "qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=", 
+		"block_id": "59534f7d-db5b-4792-8937-09996638c3d4"
+    }, 
+    "timestamp": 1609385156, 
+    "appid": "dec213b6aced0336932e272f3faaf9e4", 
+    "sign_data": "ZDRlZTcyNWJiYjRmOGEzMjJiMjE2ZDY2ZGJiMjQ1MzQwZTgwNTVlZDI5N2NjOThkMTE5YWJlNjJhYmVkYjEwOQ=="
+}
+```
+
+返回示例
+
+```json
+{
+    "code": 0, 
+    "data": {
+        "blcok": {
+            "action": 1, 
+            "assets_id": "123", 
+            "data": "zzzzz", 
+            "exchange_id": "qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=", 
+            "id": "59534f7d-db5b-4792-8937-09996638c3d4", 
+            "refer": "zzzzz", 
+            "send_time": "2020-12-31T03:06:48.535213018Z", 
+            "type": "DEAL"
+        }
+    }, 
+    "msg": "success"
+}
+```
+
 
 
 **（6）查询指定区块ID的原始区块数据**
@@ -432,6 +712,87 @@ base64后结果：
 >
 > 按区块ID查询时没有限制链用户范围。
 
+请求示例
+
+```json
+{
+    "version": "1", 
+    "sign_type": "SHA256", 
+    "data": {
+        "exchange_id": "qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=", 
+        "block_id": "59534f7d-db5b-4792-8937-09996638c3d4"
+    }, 
+    "timestamp": 1609385186, 
+    "appid": "dec213b6aced0336932e272f3faaf9e4", 
+    "sign_data": "Yjg0ZGQzNmRlYjFhNTIwMTFlMTExYzM2NjUyNTlkYzcyOTEwNTljYTUwYmEzMGJlYzUxMTdmMTYwOThhMzQ2NA=="
+}
+```
+
+返回示例
+
+```json
+{
+    "code": 0, 
+    "data": {
+        "blcok": {
+            "data": {
+                "txs": [
+                    "eyJTaWduYXR1cmUiOiJ5aVFNTGx6bXp3TGZmR2NxMitiajY0OUlDVmU3cHlaVXUwYVhmYTN4eTdjYktFMm43UWg0WW5TdTNERVNtRFUrNFRLWVQrdGt1QWVjSStmUE5lQ3VCZz09IiwiU2VuZFRpbWUiOiIyMDIwLTEyLTMxVDAzOjA2OjQ4LjUzNTIxMzAxOFoiLCJTaWduUHViS2V5Ijp7InR5cGUiOiJlZDI1NTE5L3B1YmtleSIsInZhbHVlIjoiYm5nUm9FdzFRTCsyUzNRYUtFMlZwdG9zUzJqWXJRbHZkVFIxdE9vZkZVTT0ifSwiUGF5bG9hZCI6eyJ0eXBlIjoiZGVhbCIsInZhbHVlIjp7IklEIjoiV1ZOUGZkdGJSNUtKTndtWlpqakQxQT09IiwiQXNzZXRzSUQiOiJNVEl6IiwiRXhjaGFuZ2VJRCI6InF5QnNYblZLS2p2Rk54SEJSdWRjM3RDcDh0OHltcUJTRjFHYThxbGZxRnM9IiwiRGF0YSI6IkIveVBSMVFIUkZwaU0rVk9DMVlsVDFtOENsd2VRTk1yQlcwTHUxbzlBWlBGNGlQM2NSZGdzZ1dxL0t1ZSIsIlJlZmVyIjoiZW5wNmVubz0iLCJBY3Rpb24iOjF9fX0="
+                ]
+            }, 
+            "evidence": {
+                "evidence": []
+            }, 
+            "header": {
+                "app_hash": "0000000000000000", 
+                "chain_id": "test-chain-mu6R5U", 
+                "consensus_hash": "048091BC7DDC283F77BFBF91D73C44DA58C3DF8A9CBC867405D8B7F3DAADA22F", 
+                "data_hash": "BCD0AF5B8CA23DA3949962C459553057B1C58ADFDEF742850E91F5976C9B1EE0", 
+                "evidence_hash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855", 
+                "height": "3", 
+                "last_block_id": {
+                    "hash": "DA6997132D77FB664891184ED1769D423913F9D735096155F546F04FD80C2D07", 
+                    "parts": {
+                        "hash": "0FE0A68DED7CA1952D8E0C14FF00D21E88835E0061FFE6E854C6BDEBECBAF2E3", 
+                       	"total": 1
+                    }
+                }, 
+                "last_commit_hash": "094D0C3196022282C0AE5816B54C03C2832003C631AE709E8C87AE0254FBA7C2", 
+                "last_results_hash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855", 
+                "next_validators_hash": "B1CD94B2455ADA3D2A90EF23C42827C7F341597C1507468B54D2FC3C92CDD4FC", 
+                "proposer_address": "0B9CE4D58B9ECFEF233551D7EDA6346360D72C03", 
+                "time": "2020-12-31T03:06:04.660214065Z", 
+                "validators_hash": "B1CD94B2455ADA3D2A90EF23C42827C7F341597C1507468B54D2FC3C92CDD4FC", 
+                "version": {
+                    "app": "1", 
+                    "block": "11"
+                }
+            }, 
+            "last_commit": {
+                "block_id": {
+                    "hash": "DA6997132D77FB664891184ED1769D423913F9D735096155F546F04FD80C2D07", 
+                    "parts": {
+                        "hash": "0FE0A68DED7CA1952D8E0C14FF00D21E88835E0061FFE6E854C6BDEBECBAF2E3", 
+                        "total": 1
+                    }
+                }, 
+                "height": "2", 
+                "round": 0, 
+                "signatures": [
+                    {
+                        "block_id_flag": 2, 
+                        "signature": "wBbAoBO+ODWkxZoGsPs1nnMBbOifQl7PZtSXcLHSLHIyIpTfncx1W6W4YoBwW7CMbzjkBvMh2sQlKyvvIG5jBA==", 
+                        "timestamp": "2020-12-31T03:06:04.660214065Z", 
+                        "validator_address": "0B9CE4D58B9ECFEF233551D7EDA6346360D72C03"
+                    }
+                ]
+            }
+        }
+    }, 
+    "msg": "success"
+}
+```
+
 
 
 #### 6. IPFS接口
@@ -460,6 +821,18 @@ base64后结果：
 | msg  | string | 成功时返回success；出错时，返回出错信息 |
 | data | json   | IPFS文件hash值                          |
 
+请求示例
+
+```json
+
+```
+
+返回示例
+
+```json
+
+```
+
 
 
 **（2） 从IPFS下载数据**
@@ -485,4 +858,16 @@ base64后结果：
 | code | int            | 状态代码，0 表示成功，非0 表示出错      |
 | msg  | string         | 成功时返回success；出错时，返回出错信息 |
 | data | base64编码的数据 |                                         |
+
+请求示例
+
+```json
+
+```
+
+返回示例
+
+```json
+
+```
 

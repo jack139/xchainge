@@ -29,13 +29,13 @@ if __name__ == '__main__':
         'data'     : {
             'exchange_id'    : "qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=",
             'assets_id'    : '123',
-            'refer'    : 'yyy',
+            'refer'    : 'zzzz',
             'data'     : 'zzzzz',
-            'block_id' : '0f19b687-b83d-4071-a346-d69bf5a8ff6b',
+            'block_id' : '59534f7d-db5b-4792-8937-09996638c3d4',
             'action' : 1,
-            'deal_id' : 'c984032e-3d77-40d6-b75d-0ec48d9c50b4',
+            'deal_id' : '59534f7d-db5b-4792-8937-09996638c3d4',
             'from_exchange_id' : 'j9cIgmm17x0aLApf0i20UR7Pj34Ua/JwyWOuBGgYIFg=',
-            'auth_id' : '6e8fdb0e-7dea-477f-ba49-b6e1b2409798',
+            'auth_id' : 'ef57fd9e-66c8-4d23-b142-8bc32b57bfcd',
         }
     }
 
@@ -62,12 +62,12 @@ if __name__ == '__main__':
     body['sign_data'] = signature_str
 
     body = json.dumps(body)
-    #print(body)
+    print(body)
 
     pool = urllib3.PoolManager(num_pools=2, timeout=180, retries=False)
 
     host = 'http://%s:%s'%(hostname, port)
-    url = host+'/api/query_auths'
+    url = host+'/api/query_block'
 
     start_time = datetime.now()
     r = pool.urlopen('POST', url, body=body)

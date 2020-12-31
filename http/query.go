@@ -34,7 +34,7 @@ func queryDeals(ctx *fasthttp.RequestCtx) {
 	var respData []map[string]interface{}
 
 	if err := json.Unmarshal(respBytes, &respData); err != nil {
-		respError(ctx, 9002, err.Error())
+		respError(ctx, 9004, err.Error())
 		return
 	}
 
@@ -73,7 +73,7 @@ func queryAuths(ctx *fasthttp.RequestCtx) {
 	var respData []map[string]interface{}
 
 	if err := json.Unmarshal(respBytes, &respData); err != nil {
-		respError(ctx, 9002, err.Error())
+		respError(ctx, 9004, err.Error())
 		return
 	}
 
@@ -109,7 +109,7 @@ func queryByAsstes(ctx *fasthttp.RequestCtx) {
 	// 只查询当前用户的交易
 	respBytes, err := me.Query("assets", assetsId)
 	if err!=nil {
-		respError(ctx, 9001, err.Error())
+		respError(ctx, 9002, err.Error())
 		return
 	}
 
@@ -117,7 +117,7 @@ func queryByAsstes(ctx *fasthttp.RequestCtx) {
 	var respData []map[string]interface{}
 
 	if err := json.Unmarshal(respBytes, &respData); err != nil {
-		respError(ctx, 9002, err.Error())
+		respError(ctx, 9004, err.Error())
 		return
 	}
 
@@ -153,7 +153,7 @@ func queryByRefer(ctx *fasthttp.RequestCtx) {
 	// 只查询当前用户的交易
 	respBytes, err := me.Query("refer", refer)
 	if err!=nil {
-		respError(ctx, 9001, err.Error())
+		respError(ctx, 9002, err.Error())
 		return
 	}
 
@@ -161,7 +161,7 @@ func queryByRefer(ctx *fasthttp.RequestCtx) {
 	var respData []map[string]interface{}
 
 	if err := json.Unmarshal(respBytes, &respData); err != nil {
-		respError(ctx, 9002, err.Error())
+		respError(ctx, 9004, err.Error())
 		return
 	}
 
@@ -194,24 +194,24 @@ func queryBlock(ctx *fasthttp.RequestCtx) {
 	}
 	blockId, ok := (*reqData)["block_id"].(string)
 	if !ok {
-		respError(ctx, 9001, "need block_id")
+		respError(ctx, 9002, "need block_id")
 		return
 	}
 
 	respBytes, err := me.QueryTx(exchangeId, blockId)
 	if err!=nil {
-		respError(ctx, 9001, err.Error())
+		respError(ctx, 9003, err.Error())
 		return
 	}
 
 	// 转换成map, 生成返回数据
 	var respData map[string]interface{}
-
-	if err := json.Unmarshal(respBytes, &respData); err != nil {
-		respError(ctx, 9002, err.Error())
-		return
+	if len(respBytes)>0 {
+		if err := json.Unmarshal(respBytes, &respData); err != nil {
+			respError(ctx, 9004, err.Error())
+			return
+		}
 	}
-
 	resp := map[string] interface{} {
 		"blcok" : respData,
 	}
@@ -242,24 +242,24 @@ func queryRawBlock(ctx *fasthttp.RequestCtx) {
 	}
 	blockId, ok := (*reqData)["block_id"].(string)
 	if !ok {
-		respError(ctx, 9001, "need block_id")
+		respError(ctx, 9002, "need block_id")
 		return
 	}
 
 	respBytes, err := me.QueryRawBlock(exchangeId, blockId)
 	if err!=nil {
-		respError(ctx, 9001, err.Error())
+		respError(ctx, 9003, err.Error())
 		return
 	}
 
 	// 转换成map, 生成返回数据
 	var respData map[string]interface{}
-
-	if err := json.Unmarshal(respBytes, &respData); err != nil {
-		respError(ctx, 9002, err.Error())
-		return
+	if len(respBytes)>0 {
+		if err := json.Unmarshal(respBytes, &respData); err != nil {
+			respError(ctx, 9004, err.Error())
+			return
+		}
 	}
-
 	resp := map[string] interface{} {
 		"blcok" : respData,
 	}

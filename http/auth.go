@@ -41,7 +41,7 @@ func authRequest(ctx *fasthttp.RequestCtx) {
 
 	// 正常 返回空
 	resp := map[string] interface{} {
-		"data" : "",
+		"data" : nil,
 	}
 	respJson(ctx, &resp)
 }
@@ -77,7 +77,7 @@ func authResponse(ctx *fasthttp.RequestCtx) {
 
 	// 正常 返回空
 	resp := map[string] interface{} {
-		"data" : "",
+		"data" : nil,
 	}
 	respJson(ctx, &resp)
 }

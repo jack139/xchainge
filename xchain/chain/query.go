@@ -314,14 +314,14 @@ func queryTx(app *App, exchangeId, dealId []byte) (respTx *types.Transx) {
 		if ok {
 			if deal.ID.String()==string(dealId) {
 				respTx = &tx
-				break
+				return
 			}
 		} else {  // 授权块，没有 refer
 			auth, ok := tx.Payload.(*types.Auth)	// 授权块
 			if ok {
 				if auth.ID.String()==string(dealId) {
 					respTx = &tx
-					break
+					return
 				}
 			}
 		}
@@ -331,7 +331,7 @@ func queryTx(app *App, exchangeId, dealId []byte) (respTx *types.Transx) {
 		height = FindKey(db, blockLinkKey)
 	}
 
-	return
+	return nil
 }
 
 func queryRawBlock(app *App, exchangeId, dealId []byte) (block *tmtypes2.Block) {
@@ -353,13 +353,13 @@ func queryRawBlock(app *App, exchangeId, dealId []byte) (block *tmtypes2.Block) 
 		deal, ok := tx.Payload.(*types.Deal)	// 交易块
 		if ok {
 			if deal.ID.String()==string(dealId) {
-				break
+				return
 			}
 		} else {  // 授权块，没有 refer
 			auth, ok := tx.Payload.(*types.Auth)	// 授权块
 			if ok {
 				if auth.ID.String()==string(dealId) {
-					break
+					return
 				}
 			}
 		}
@@ -369,6 +369,6 @@ func queryRawBlock(app *App, exchangeId, dealId []byte) (block *tmtypes2.Block) 
 		height = FindKey(db, blockLinkKey)
 	}
 
-	return
+	return nil
 }
 
