@@ -16,6 +16,8 @@ func RunServer(port string) {
 	r.GET("/", index)
 	r.POST("/api/test", doNonthing)
 	r.POST("/api/deal", deal)
+	r.POST("/api/auth_request", authRequest)
+	r.POST("/api/auth_response", authResponse)
 	r.POST("/api/query_deals", queryDeals)
 	r.POST("/api/query_auths", queryAuths)
 	r.POST("/api/query_by_assets", queryByAsstes)

@@ -33,6 +33,9 @@ if __name__ == '__main__':
             'data'     : 'zzzzz',
             'block_id' : '0f19b687-b83d-4071-a346-d69bf5a8ff6b',
             'action' : 1,
+            'deal_id' : 'c984032e-3d77-40d6-b75d-0ec48d9c50b4',
+            'from_exchange_id' : 'j9cIgmm17x0aLApf0i20UR7Pj34Ua/JwyWOuBGgYIFg=',
+            'auth_id' : '6e8fdb0e-7dea-477f-ba49-b6e1b2409798',
         }
     }
 
@@ -63,7 +66,7 @@ if __name__ == '__main__':
     pool = urllib3.PoolManager(num_pools=2, timeout=180, retries=False)
 
     host = 'http://%s:%s'%(hostname, port)
-    url = host+'/api/deal'
+    url = host+'/api/query_auths'
 
     start_time = datetime.now()
     r = pool.urlopen('POST', url, body=body)
