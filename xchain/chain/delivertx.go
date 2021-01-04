@@ -41,7 +41,7 @@ func (app *App) DeliverTx(req tmtypes.RequestDeliverTx) (rsp tmtypes.ResponseDel
 		auth, ok := tx.Payload.(*types.Auth)	// 授权
 		if ok {
 			switch auth.Action {
-			case 0x04, 0x05, 0x06:
+			case 0x04, 0x05:
 				rsp.Log = actionMessage[auth.Action]
 				// 业务逻辑放这里
 
