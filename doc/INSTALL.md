@@ -14,6 +14,7 @@ wget https://github.com/google/leveldb/archive/v1.20.tar.gz && \
   sudo cp -r leveldb /usr/local/include/ && \
   sudo ldconfig && \
   rm -f v1.20.tar.gz
+export LD_LIBRARY_PATH=/usr/local/lib
 ```
 
 
@@ -48,17 +49,20 @@ build/xchain show_node_id --home n1
 修改n2/config/config.toml
 
 ```toml
+# 在同一ip下测试时，需要修改端口
 proxy_app = "tcp://127.0.0.1:36658"
 laddr = "tcp://127.0.0.1:36657"
 laddr = "tcp://0.0.0.0:36656"
+# 前面的peer id是上面n1节点的id
 persistent_peers = "b2c82964b2c67236f94a84aa19b0fda6e91869a0@127.0.0.1:26656"
 ```
 
 修改各节点的config/config.toml
 
-```
-addr_book_strict = false
+```toml
 create_empty_blocks = false
+# 私有网络或单机测试需要设置这个
+addr_book_strict = false
 ```
 
 
