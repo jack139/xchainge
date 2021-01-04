@@ -40,7 +40,7 @@ func deal(ctx *fasthttp.RequestCtx) {
 		respError(ctx, 9003, "need data")
 		return
 	}
-	refer, _ := (*reqData)["data"].(string)
+	refer, _ := (*reqData)["refer"].(string)
 
 	// 提交交易
 	err = me.Deal(strconv.Itoa(int(action)), assetsId, data, refer)
