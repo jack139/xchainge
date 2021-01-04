@@ -3,7 +3,7 @@ module xchainge
 go 1.15
 
 require (
-	github.com/AubSs/fasthttplogger v0.0.0-20170531123222-7dab642e7dab
+	github.com/Ferluci/fast-realip v1.0.0
 	github.com/fasthttp/router v1.3.4
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/cobra v1.1.1

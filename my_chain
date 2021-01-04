@@ -1,0 +1,72 @@
+#!/bin/sh
+
+CHAIN_DIR="/root/xchainge"
+CHAIN_BIN=$CHAIN_DIR"/build"
+CHAIN_USERS=$CHAIN_DIR"/users"
+LOG_PATH="/var/log/xchainge"
+
+start_back() {
+	nohup $CHAIN_BIN/"xchain" node --home n1 2>&1 > $LOG_PATH"/n1.log" &
+	nohup $CHAIN_BIN/"xchain" node --home n2 2>&1 > $LOG_PATH"/n2.log" &
+	nohup $CHAIN_BIN/"xcli" http 8888 $CHAIN_USERS 2>&1 > $LOG_PATH"/http.log" &
+	return 0 
+}
+
+stop_back() {
+	kill -9 `pgrep -f "xcli"`
+	kill -9 `pgrep -f "xchain"`
+	return 0
+}
+
+status() {
+	ps -f -C nginx -C xchain -C xcli
+	return 0
+}
+
+restart() {
+	stop_back
+	sleep 1
+	start_back
+}
+
+
+case "$1" in
+	start)
+	case "$2" in
+	  back)
+		start_back
+		RETVAL=$?
+		;;
+	  *)
+		start_back
+		RETVAL=$?
+		;;
+	esac
+	;;
+	stop)
+	case "$2" in
+	  back)
+		stop_back
+		RETVAL=$?
+		;;
+	  *)
+		stop_back
+		RETVAL=$?
+		;;
+	esac 
+	;;
+	restart)
+	restart
+	RETVAL=$?
+	;;
+	status)
+	status
+	RETVAL=$?
+	;;
+	*)
+	echo $"Usage: my_chain {start|stop|restart} {back|all} | status"
+	RETVAL=2
+	;;
+esac
+
+exit $RETVAL

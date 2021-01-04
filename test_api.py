@@ -67,7 +67,7 @@ if __name__ == '__main__':
     pool = urllib3.PoolManager(num_pools=2, timeout=180, retries=False)
 
     host = 'http://%s:%s'%(hostname, port)
-    url = host+'/api/query_block'
+    url = host+'/api/query_deals'
 
     start_time = datetime.now()
     r = pool.urlopen('POST', url, body=body)
