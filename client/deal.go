@@ -7,6 +7,7 @@ import (
 	"io"
 	"strconv"
 	"time"
+	"encoding/json"
 	crypto_rand "crypto/rand"
 	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/nacl/box"
@@ -22,10 +23,10 @@ func isASCII(s string) bool {
 }
 
 // 交易上链，数据加密
-func (me *User) Deal(action, assetsId, data, refer string) error {
+func (me *User) Deal(action, assetsId, data, refer string) ([]byte, error) {
 
 	if !isASCII(assetsId) {
-		return fmt.Errorf("assetsId must be visible ASCII")
+		return nil, fmt.Errorf("assetsId must be visible ASCII")
 	}
 
 	// 交易所id
@@ -63,13 +64,13 @@ func (me *User) Deal(action, assetsId, data, refer string) error {
 	bz, err := cdc.MarshalJSON(&tx)
 	if err != nil {
 		fmt.Println(err)
-		return err
+		return nil, err
 	}
 
 	ret, err := cli.BroadcastTxSync(ctx, bz)
 	if err != nil {
 		fmt.Println(err)
-		return err
+		return nil, err
 	}
 
 	fmt.Printf("deal => %+v\n", ret)
@@ -77,8 +78,16 @@ func (me *User) Deal(action, assetsId, data, refer string) error {
 	// ret  *ctypes.ResultBroadcastTxCommit
 	if ret.Code !=0 {
 		fmt.Println(ret.Log)
-		return fmt.Errorf(ret.Log)
+		return nil, fmt.Errorf(ret.Log)
 	}
 
-	return nil
+	respMap := map[string]interface{}{"id" : deal.ID.String()}
+
+	// 返回结果转为json
+	respBytes, err := json.Marshal(respMap)
+	if err != nil {
+		return nil, err
+	}
+
+	return respBytes, nil
 }

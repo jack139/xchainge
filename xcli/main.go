@@ -57,7 +57,11 @@ var (
 			assetsId := args[1]
 			data := args[2]
 			refer := args[3]
-			return me.Deal(action, assetsId, data, refer)
+			respBytes, err := me.Deal(action, assetsId, data, refer)
+			if err==nil {
+				fmt.Printf("Deal ==> %s\n", respBytes)
+			}
+			return err
 		},
 	}
 	authRequestCmd = &cobra.Command{	// 上链操作，请求授权
@@ -74,7 +78,11 @@ var (
 			}
 			fromExchangeId := args[0]
 			dealId := args[1] // 请求授权的 dealID
-			return me.AuthRequest(fromExchangeId, dealId)
+			respBytes, err := me.AuthRequest(fromExchangeId, dealId)
+			if err==nil {
+				fmt.Printf("AuthReq ==> %s\n", respBytes)
+			}
+			return err
 		},
 	}
 	authResponseCmd = &cobra.Command{	// 上链操作，响应授权
@@ -90,7 +98,11 @@ var (
 				return errors.New("need more parameters")
 			}
 			authId := args[0] // 响应授权的 authID
-			return me.AuthResponse(authId)
+			respBytes, err := me.AuthResponse(authId)
+			if err==nil {
+				fmt.Printf("AuthResp ==> %s\n", respBytes)
+			}
+			return err
 		},
 	}
 
