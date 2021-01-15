@@ -181,7 +181,20 @@ func txToResp(me *User, tx *types.Transx) *map[string]interface{} {
 			respMap["send_time"] = *(*tx).SendTime
 			return &respMap
 
+		} else {
+			credit, ok := (*tx).Payload.(*types.Credit)	// CR
+			if ok {
+				exchangeId, _ := cdc.MarshalJSON(credit.UserID)
+				respMap["type"] = "CREDIT"
+				respMap["id"]  = credit.ID.String()
+				respMap["user_id"]  = string(exchangeId[1 : len(exchangeId)-1]) // 去掉两边引号
+				respMap["data"]  = credit.Data
+				respMap["action"]  = credit.Action
+				respMap["send_time"]  = *(*tx).SendTime
+				return &respMap
+			}
 		}
+
 	}
 
 	return nil

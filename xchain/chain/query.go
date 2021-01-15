@@ -80,7 +80,7 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 	}
 
 	switch matchmap["cate"] {
-	case "assets", "deal", "auth", "refer": // 资产交易历史， deal交易历史, auth历史
+	case "assets", "deal", "auth", "refer", "credit": // 资产交易历史， deal交易历史, auth历史
 		var respHistory []types.Transx
 		var linkKey []byte
 		var linkType string
@@ -123,7 +123,7 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 
 			deal, ok := tx.Payload.(*types.Deal)	// 交易块
 			if ok {
-				if matchmap["cate"]=="auth" { // deal, assets, refer
+				if matchmap["cate"]=="auth" || matchmap["cate"]=="credit" { // deal, assets, refer
 					goto go_next
 				}
 				if matchmap["cate"]=="refer" { 
@@ -134,8 +134,15 @@ func (app *App) Query(req tmtypes.RequestQuery) (rsp tmtypes.ResponseQuery) {
 					}
 				}
 			} else {  // 授权块，没有 refer
-				if matchmap["cate"]!="auth" { // auth
-					goto go_next
+				_, ok := tx.Payload.(*types.Credit)	// CR
+				if ok {
+					if matchmap["cate"]!="credit" { 
+						goto go_next
+					}					
+				} else {
+					if matchmap["cate"]!="auth" { // auth
+						goto go_next
+					}
 				}
 			}
 

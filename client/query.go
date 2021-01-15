@@ -135,7 +135,7 @@ func query(addr []byte, category, queryContent string) (*[]types.Transx, error) 
 	buf.WriteString(category)
 	//获得拼接后的字符串
 	path := buf.String()
-	if (category=="deal"||category=="auth") && queryContent!="_" {  
+	if (category=="deal"||category=="auth"||category=="credit") && queryContent!="_" {  
 		if queryContent[0]!='"' { // 用户公钥需要加双引号
 			queryContent = "\"" + queryContent + "\""
 		}
@@ -159,17 +159,25 @@ func query(addr []byte, category, queryContent string) (*[]types.Transx, error) 
 	cdc.UnmarshalJSON(data, &txHistory)
 
 	for _, tx := range txHistory {
-		if category=="auth" {
+		switch category {
+		case "auth":
 			_, ok := tx.Payload.(*types.Auth)	// 授权
 			if ok {
 				txResp = append(txResp, tx)
 			}
-		} else { // category == deal, assets, refer
+		
+		case "credit":
+			_, ok := tx.Payload.(*types.Credit)	// CR
+			if ok {
+				txResp = append(txResp, tx)
+			}
+
+		default: // category == deal, assets, refer, credit
 			_, ok := tx.Payload.(*types.Deal) // 交易
 			if ok {
 				txResp = append(txResp, tx)
 			}
-		} 
+		}
 	}
 
 	return &txResp, nil

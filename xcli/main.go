@@ -226,6 +226,46 @@ var (
 		},
 	}
 
+	creditCmd = &cobra.Command{	// CR上链操作
+		Use:   "credit",
+		Short: "make credits",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			path, _ := cmd.Flags().GetString("home")
+			me, err := client.GetMe(path)
+			if err!=nil {
+				return err
+			}
+			if len(args) < 3 {
+				return errors.New("need more parameters")
+			}
+			action := args[0]
+			data := args[1]
+			num := args[2]
+			respBytes, err := me.Credit(action, data, num)
+			if err==nil {
+				fmt.Printf("Credit ==> %s\n", respBytes)
+			}
+			return err
+		},
+	}
+
+	queryCreditCmd = &cobra.Command{	// 查询 CR
+		Use:   "queryCR",
+		Short: "query CR history",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			path, _ := cmd.Flags().GetString("home")
+			me, err := client.GetMe(path)
+			if err!=nil {
+				return err
+			}
+			respBytes, err := me.Query("credit", "_")
+			if err==nil {
+				fmt.Printf("Credit ==> %s\n", respBytes)
+			}
+			return err
+		},
+	}
+
 	httpCmd = &cobra.Command{	// 启动http服务
 		Use:   "http <port> <user_path>",
 		Short: "start http service",
@@ -254,6 +294,8 @@ func init() {
 	queryAuthCmd.Flags().StringP("home", "", "", "密钥文件路径")
 	queryTxCmd.Flags().StringP("home", "", "", "密钥文件路径")
 	queryRawCmd.Flags().StringP("home", "", "", "密钥文件路径")
+	creditCmd.Flags().StringP("home", "", "", "密钥文件路径");
+	queryCreditCmd.Flags().StringP("home", "", "", "密钥文件路径")
 
 	initCmd.MarkFlagRequired("home")
 	dealCmd.MarkFlagRequired("home")
@@ -265,6 +307,8 @@ func init() {
 	queryAuthCmd.MarkFlagRequired("home")
 	queryTxCmd.MarkFlagRequired("home")
 	queryRawCmd.MarkFlagRequired("home")
+	creditCmd.MarkFlagRequired("home")
+	queryCreditCmd.MarkFlagRequired("home")
 
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(dealCmd)
@@ -277,6 +321,8 @@ func init() {
 	rootCmd.AddCommand(queryTxCmd)
 	rootCmd.AddCommand(queryRawCmd)
 	rootCmd.AddCommand(httpCmd)
+	rootCmd.AddCommand(creditCmd)
+	rootCmd.AddCommand(queryCreditCmd)
 
 }
 

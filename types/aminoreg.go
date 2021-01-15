@@ -14,6 +14,7 @@ func init() {
 	AminoCdc.RegisterInterface((*IPayload)(nil), nil)
 	AminoCdc.RegisterConcrete(&Deal{}, "deal", nil)
 	AminoCdc.RegisterConcrete(&Auth{}, "auth", nil)
+	AminoCdc.RegisterConcrete(&Credit{}, "credit", nil)
 	AminoCdc.RegisterInterface((*crypto.PubKey)(nil), nil)
 	AminoCdc.RegisterConcrete(ed25519.PubKey{}, "ed25519/pubkey", nil)
 	AminoCdc.RegisterInterface((*crypto.PrivKey)(nil), nil)

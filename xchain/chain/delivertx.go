@@ -49,6 +49,19 @@ func (app *App) DeliverTx(req tmtypes.RequestDeliverTx) (rsp tmtypes.ResponseDel
 				rsp.Log = "weird auth command"
 				rsp.Code = 3
 			}
+		} else {
+			credit, ok := tx.Payload.(*types.Credit)	// CR
+			if ok {
+				switch credit.Action {
+				case 0x01, 0x02, 0x03:
+					rsp.Log = fmt.Sprintf("CR action=%d", credit.Action)
+					// 业务逻辑放这里
+
+				default:
+					rsp.Log = "weird auth command"
+					rsp.Code = 3
+				}
+			}
 		}
 	}
 
@@ -92,6 +105,14 @@ func (app *App) EndBlock(req tmtypes.RequestEndBlock) (rsp tmtypes.ResponseEndBl
 			}
 
 			AddToLink(db, "exchange", exchangeID, req.Height)
+		} else {
+			credit, ok := tx.Payload.(*types.Credit)	// CR
+			if ok {
+				// 完善链表
+				exchangeID, _ := cdc.MarshalJSON(credit.UserID)
+
+				AddToLink(db, "exchange", exchangeID, req.Height)
+			}
 		}
 	}
 

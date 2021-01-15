@@ -59,6 +59,30 @@ func (app *App) isValidAuth(auth *types.Auth) error {
 	return nil
 }
 
+
+// 检查CR
+func (app *App) isValidCredit(credit *types.Credit) error {
+	m := *credit
+
+	// 检查参数
+	if len(m.UserID)==0 { 
+		return fmt.Errorf("bad parameters") // 参数问题
+	}
+
+	switch m.Action {
+	case 0x01:
+		{}
+	case 0x02, 0x03:
+		if len(m.Data)==0 { 
+			return fmt.Errorf("bad parameters in Data") // 参数问题
+		}
+	default:
+		return fmt.Errorf("weird auth command")
+	}
+
+	return nil
+}
+
 /*
 	检查交易
 */
@@ -89,10 +113,15 @@ func (app *App) CheckTx(req tmtypes.RequestCheckTx) (rsp tmtypes.ResponseCheckTx
 		if ok {
 			err = app.isValidAuth(auth)  // 检查 授权 合法性
 		} else {
-			rsp.Code = 3
-			rsp.Log = "CheckTx unknown type"
-			app.logger.Info("CheckTx() fail", "unknown type", rsp.Log)
-			return				
+			credit, ok := tx.Payload.(*types.Credit)
+			if ok {
+				err = app.isValidCredit(credit)  // 检查 CR 合法性
+			} else {
+				rsp.Code = 3
+				rsp.Log = "CheckTx unknown type"
+				app.logger.Info("CheckTx() fail", "unknown type", rsp.Log)
+				return
+			}
 		}
 	}
 
