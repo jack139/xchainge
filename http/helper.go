@@ -175,7 +175,7 @@ func checkSign(content []byte) (*map[string]interface{}, error) {
 		}
 	}
 	signString += "key=" + secret
-	fmt.Println(signString)
+	//fmt.Println(signString)
 
 	h := sha256.New()
 	h.Write([]byte(signString))

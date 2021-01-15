@@ -54,9 +54,9 @@ func bizRegister(ctx *fasthttp.RequestCtx) {
 
 
 	// 提交交易
-	// data --> user_type,  refer --> user_name
+	// data --> user_name,  refer --> user_type
 	// user_type: "office" 事务所；"supplier" 供应商；"buyer" 企业用户
-	respBytes, err := me.Deal("13", "_", userType, userName) 
+	respBytes, err := me.Deal("13", "_", userName, userType) 
 	if err != nil {
 		respError(ctx, 9004, err.Error())
 		return
