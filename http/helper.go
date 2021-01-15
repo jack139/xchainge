@@ -46,12 +46,7 @@ func loadSecretKey(path string) error{
 			return err
 		}
 
-		//pubkey, _ := cdc.MarshalJSON(*u.CryptoPair.PubKey)
-		//pubkey = pubkey[1 : len(pubkey)-1]
 		pubkey := base64.StdEncoding.EncodeToString(u.CryptoPair.PubKey[:])
-		fmt.Println(pubkey)
-	    //data := []byte(secret)
-	    //appid:=fmt.Sprintf("%x", md5.Sum(data))
 		SECRET_KEY[pubkey] = u // 保存用户信息
 	}
 
@@ -180,7 +175,7 @@ func checkSign(content []byte) (*map[string]interface{}, error) {
 		}
 	}
 	signString += "key=" + secret
-	//fmt.Println(signString)
+	fmt.Println(signString)
 
 	h := sha256.New()
 	h.Write([]byte(signString))

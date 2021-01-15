@@ -179,7 +179,7 @@ base64后结果：
 | user_name | string | 用户名称     |
 | user_type | string | 注册用户类型 |
 
-> user_type 取值：“office” 事务所；"supplier" 供应商；"firm" 企业用户。
+> user_type 取值："office" 事务所；"supplier" 供应商；"buyer" 企业用户。
 
 返回结果
 
@@ -192,13 +192,32 @@ base64后结果：
 请求示例
 
 ```json
-
+{
+    "version": "1", 
+    "sign_type": "SHA256", 
+    "data": {
+        "user_name": "test1", 
+        "user_type": "buyer"
+    }, 
+    "timestamp": 1610692800, 
+    "appid": "4fcf3871f4a023712bec9ed44ee4b709", 
+    "sign_data": "MTZlODRlNGYyMWNiNTk1MzAxYWUyNjI0ODIzOWQxYWI1MjZmZmQzMDc3ZDU5ZmZiMGEzMWU2Y2QwOGE1NTdhOQ=="
+}
 ```
 
 返回示例
 
 ```json
-
+{
+    'code': 0, 
+    'data': {
+        'block': {
+            'id': 'deebbcbb-4487-4216-b202-dd7646b4c191'
+        }, 
+        'userkey': '2ZbpQWYBaN/wuImYJNCLvKMuOM5RZTIZjDyxXNYzyx0='
+    }, 
+    'msg': 'success'
+}
 ```
 
 
@@ -233,13 +252,35 @@ base64后结果：
 请求示例
 
 ```json
-
+{
+    "version": "1", 
+    "sign_type": "SHA256", 
+    "data": {
+        "userkey_a": "qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=", 
+        "userkey_b": "j9cIgmm17x0aLApf0i20UR7Pj34Ua/JwyWOuBGgYIFg=", 
+        "assets_id": "123", 
+        "data": "zzzzz"
+    }, "timestamp": 1610690910, 
+    "appid": "4fcf3871f4a023712bec9ed44ee4b709", 
+    "sign_data": "ZWE3Y2YyMzVlODVlZDg1MTUyYjNhNzZjMzAwYTlmN2ViYTk2ZDcxMWExYTUyOGU5ODI5NzhhNmZiYjFkZjBiNA=="
+}
 ```
 
 返回示例
 
 ```json
-
+{
+    'code': 0, 
+    'data': {
+        'block_a': {
+            'id': '002b12e5-5df8-4265-92b5-45d492dcf99c'
+        }, 
+        'block_b': {
+            'id': '67da3edd-ea41-4255-82b4-4fb6f4b5d84c'
+        }
+    }, 
+    'msg': 'success'
+}
 ```
 
 
@@ -274,16 +315,37 @@ base64后结果：
 请求示例
 
 ```json
-
+{
+    "version": "1", 
+    "sign_type": "SHA256", 
+    "data": {
+        "userkey_a": "qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=", 
+        "userkey_b": "j9cIgmm17x0aLApf0i20UR7Pj34Ua/JwyWOuBGgYIFg=", 
+        "assets_id": "123", 
+        "data": "zzzzz"
+    }, 
+    "timestamp": 1610691004, 
+    "appid": "4fcf3871f4a023712bec9ed44ee4b709", 
+    "sign_data": "OTRmNTQyNDRmM2JhNGM0YWEyNDM1MDI0MWM3ZDc1ZWQ4YWU0OTIwNjlhZmRlMWNiODMyNzBkNTUyYjFmYWE3OA=="
+}
 ```
 
 返回示例
 
 ```json
-
+{
+    'code': 0, 
+    'data': {
+        'block_a': {
+            'id': 'ad7a7961-f2db-4c1f-8112-52e8dee55478'
+        }, 
+        'block_b': {
+            'id': '76a709f0-1b75-4ea2-b645-7d54eaead6e1'
+        }
+    }, 
+    'msg': 'success'
+}
 ```
-
-
 
 
 
@@ -353,11 +415,13 @@ base64后结果：
 
 
 
-##### 3.2 按合同号查询历史交易
+
+
+##### 3.2 按合同编号查询历史交易
 
 请求URL
 
-> http://<host>:<port>/api/query_by_refer
+> http://<host>:<port>/api/query_by_assets
 
 请求方式
 
@@ -365,10 +429,10 @@ base64后结果：
 
 输入参数（data字段下）
 
-| 参数    | 类型   | 说明     |
-| ------- | ------ | -------- |
-| userkey | string | 用户公钥 |
-| refer   | string | 合同号   |
+| 参数      | 类型   | 说明     |
+| --------- | ------ | -------- |
+| userkey   | string | 用户公钥 |
+| assets_id | string | 合同编号 |
 
 返回结果
 
@@ -376,7 +440,7 @@ base64后结果：
 | ---- | ------ | --------------------------------------- |
 | code | int    | 状态代码，0 表示成功，非0 表示出错      |
 | msg  | string | 成功时返回success；出错时，返回出错信息 |
-| data | json   | 相同refer的交易列表                     |
+| data | json   | 相同资产ID的交易列表                    |
 
 请求示例
 
@@ -386,11 +450,11 @@ base64后结果：
     "sign_type": "SHA256", 
     "data": {
         "pubkey": "qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=", 
-        "refer": "1234"
-	}, 
-    "timestamp": 1609384738, 
+        "assets_id": "123"
+    }, 
+    "timestamp": 1609384684, 
     "appid": "dec213b6aced0336932e272f3faaf9e4", 
-    "sign_data": "ZGJkMmNhMmI2ZjY0MTM1MmI2YjIxYzkwN2MyODA4NjhhZDQ1ZDUwMTI4ZWVkNjY1ZmFiZGU5NzJmNmE0NDMxOQ=="
+    "sign_data": "YTg4NjliYjA3NzA5NmE3YzRmNTBmODc4OGM3ZGMyNzUzN2JjYjlmM2VkNjkyOTdiZjljMzExNDEzMzRkZjgwMQ=="
 }
 ```
 
@@ -419,7 +483,7 @@ base64后结果：
 
 
 
-##### 3.4 查询指定区块ID的交易内容
+##### 3.3 查询指定区块ID的交易内容
 
 请求URL
 
@@ -487,7 +551,7 @@ base64后结果：
 
 
 
-##### 3.5 查询指定区块ID的原始区块数据
+##### 3.4 查询指定区块ID的原始区块数据
 
 请求URL
 

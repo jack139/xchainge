@@ -11,7 +11,7 @@ def gen_param_str(param1):
     param = param1.copy()
     name_list = sorted(param.keys())
     if 'data' in name_list: # data 按 key 排序
-        param['data'] = json.dumps(param['data'], sort_keys=True).replace(' ','')
+        param['data'] = json.dumps(param['data'], sort_keys=True, ensure_ascii=False).replace(' ','')
     return '&'.join(['%s=%s'%(str(i), str(param[i])) for i in name_list if str(param[i])!=''])
 
 
@@ -28,15 +28,13 @@ if __name__ == '__main__':
         'sign_type' : 'SHA256', 
         'data'     : {
             'userkey' : 'qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=',
-            'exchange_id'    : "qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=",
+            'userkey_a' : 'qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=',
+            'userkey_b' : 'j9cIgmm17x0aLApf0i20UR7Pj34Ua/JwyWOuBGgYIFg=',
             'assets_id'    : '123',
-            'refer'    : 'zzzz',
             'data'     : 'zzzzz',
-            'block_id' : '59534f7d-db5b-4792-8937-09996638c3d4',
-            'action' : 1,
-            'deal_id' : '59534f7d-db5b-4792-8937-09996638c3d4',
-            'from_exchange_id' : 'j9cIgmm17x0aLApf0i20UR7Pj34Ua/JwyWOuBGgYIFg=',
-            'auth_id' : 'ef57fd9e-66c8-4d23-b142-8bc32b57bfcd',
+            'user_name' : '测试1',
+            'user_type' : 'buyer',
+            #'block_id' : '59534f7d-db5b-4792-8937-09996638c3d4',
         }
     }
 
@@ -56,7 +54,7 @@ if __name__ == '__main__':
         #signature_str = sm2.SM2withSM3_sign_base64(sign_str)
         pass
 
-    #print(sign_str)
+    print(sign_str.encode('utf-8'))
     #print(sha256)
     #print(signature_str)
 
@@ -68,7 +66,7 @@ if __name__ == '__main__':
     pool = urllib3.PoolManager(num_pools=2, timeout=180, retries=False)
 
     host = 'http://%s:%s'%(hostname, port)
-    url = host+'/api/query_deals'
+    url = host+'/api/biz_register'
 
     start_time = datetime.now()
     r = pool.urlopen('POST', url, body=body)

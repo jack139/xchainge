@@ -13,6 +13,7 @@ import (
 
 var (
 	output = log.New(os.Stdout, "", 0)
+	userKeyfilePath string
 )
 
 // "github.com/AubSs/fasthttplogger"
@@ -53,19 +54,26 @@ func RunServer(port string, userPath string) {
 		log.Fatal(err)
 	}
 
+	// 保存到全局变量，注册新用户时要用
+	userKeyfilePath = userPath
+
 	/* router */
 	r := router.New()
 	r.GET("/", index)
 	r.POST("/api/test", doNonthing)
-	r.POST("/api/deal", deal)
-	r.POST("/api/auth_request", authRequest)
-	r.POST("/api/auth_response", authResponse)
+	//r.POST("/api/deal", deal)
+	//r.POST("/api/auth_request", authRequest)
+	//r.POST("/api/auth_response", authResponse)
 	r.POST("/api/query_deals", queryDeals)
-	r.POST("/api/query_auths", queryAuths)
+	//r.POST("/api/query_auths", queryAuths)
 	r.POST("/api/query_by_assets", queryByAsstes)
-	r.POST("/api/query_by_refer", queryByRefer)
+	//r.POST("/api/query_by_refer", queryByRefer)
 	r.POST("/api/query_block", queryBlock)
 	r.POST("/api/query_raw_block", queryRawBlock)
+	r.POST("/api/biz_contract", bizContract)
+	r.POST("/api/biz_delivery", bizDelivery)
+	r.POST("/api/biz_register", bizRegister)
+
 
 	fmt.Printf("start HTTP server at 0.0.0.0:%s\n", port)
 
