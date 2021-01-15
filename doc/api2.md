@@ -183,10 +183,11 @@ base64后结果：
 
 输入参数（data字段下）
 
-| 参数      | 类型   | 说明         |
-| --------- | ------ | ------------ |
-| user_name | string | 用户名称     |
-| user_type | string | 注册用户类型 |
+| 参数      | 类型   | 说明                       |
+| --------- | ------ | -------------------------- |
+| user_name | string | 用户名称                   |
+| user_type | string | 注册用户类型               |
+| referrer  | string | 推荐人的用户公钥（可为空） |
 
 > user_type 取值："office" 事务所；"supplier" 供应商；"buyer" 企业用户。
 

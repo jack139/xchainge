@@ -39,6 +39,7 @@ func bizRegister(ctx *fasthttp.RequestCtx) {
 		respError(ctx, 9002, "need user_type")
 		return
 	}
+	referrer, _ := (*reqData)["referrer"].(string)
 
 	// 生成新用户密钥
 	path := userKeyfilePath+"/"+userName
@@ -56,6 +57,7 @@ func bizRegister(ctx *fasthttp.RequestCtx) {
 	var loadData = map[string]interface{}{
 		"user_name" : userName,
 		"user_type" : userType,
+		"referrer"  : referrer,
 	}
 	loadBytes, err := json.Marshal(loadData)
 	if err != nil {
@@ -155,13 +157,23 @@ func doContractDelivery(ctx *fasthttp.RequestCtx, action int) {
 		return
 	}
 
+	// 准备数据
+	var loadData = map[string]interface{}{
+		"image" : data,
+	}
+	loadBytes, err := json.Marshal(loadData)
+	if err != nil {
+		respError(ctx, 9008, err.Error())
+		return
+	}
+
 	// 提交交易, A B 两个用户都提交
-	respBytesA, err := meA.Deal(strconv.Itoa(action), assetsId, data, "") 
+	respBytesA, err := meA.Deal(strconv.Itoa(action), assetsId, string(loadBytes), "") 
 	if err != nil {
 		respError(ctx, 9004, err.Error())
 		return
 	}
-	respBytesB, err := meB.Deal(strconv.Itoa(action), assetsId, data, "") 
+	respBytesB, err := meB.Deal(strconv.Itoa(action), assetsId, string(loadBytes), "") 
 	if err != nil {
 		respError(ctx, 9004, err.Error())
 		return
