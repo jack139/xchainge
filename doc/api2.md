@@ -72,16 +72,15 @@
 
 ### 三、 API提供的区块链功能
 
-| 序号 | 接口名称        | 接口功能                                     |
-| :--: | :-------------- | -------------------------------------------- |
-|  1   | biz_register    | 用户注册                                     |
-|  2   | biz_contract    | 签合同                                       |
-|  3   | biz_delivery    | 验收                                         |
-|  4   | query_deals     | 查询自己的所以交易                           |
-|  5   | query_by_assets | 按资产ID进行检索（可能包括其他链用户的区块） |
-|  6   | query_by_refer  | 按参考值进行检索                             |
-|  7   | query_block     | 按区块ID查询制定区块                         |
-|  8   | query_raw_block | 按区块ID查询制定区块原始数据                 |
+| 序号 | 接口名称        | 接口功能                     |
+| :--: | :-------------- | ---------------------------- |
+|  1   | biz_register    | 用户注册                     |
+|  2   | biz_contract    | 签合同                       |
+|  3   | biz_delivery    | 验收                         |
+|  4   | query_deals     | 查询自己的历史交易           |
+|  5   | query_by_assets | 按合同编号进行查询历史交易   |
+|  6   | query_block     | 按区块ID查询指定区块         |
+|  7   | query_raw_block | 按区块ID查询指定区块原始数据 |
 
 
 
