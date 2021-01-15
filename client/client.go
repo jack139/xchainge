@@ -88,7 +88,6 @@ func GenUserKey(path string) (*User, error) {
 }
 
 func loadUserKey(keyFilePath string) (*User, error) {
-	//copy(privKey[:], bz)
 	jsonBytes, err := ioutil.ReadFile(keyFilePath)
 	if err != nil {
 		return nil, err

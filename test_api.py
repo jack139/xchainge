@@ -26,6 +26,7 @@ if __name__ == '__main__':
     body = {
         'version'  : '1',
         'sign_type' : 'SHA256', 
+        'userkey' : 'qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=',
         'data'     : {
             'exchange_id'    : "qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=",
             'assets_id'    : '123',
@@ -39,8 +40,8 @@ if __name__ == '__main__':
         }
     }
 
-    secret = 'UgM13IPx/BkwfQo8jceLq1CiXlT3lm4WLZ6K6TMR5bRueBGgTDVAv7ZLdBooTZWm2ixLaNitCW91NHW06h8VQw=='
-    appid = hashlib.md5(secret.encode('utf-8')).hexdigest()
+    secret = 'MjdjNGQxNGU3NjA1OWI0MGVmODIyN2FkOTEwYTViNDQzYTNjNTIyNSAgLQo='
+    appid = '4fcf3871f4a023712bec9ed44ee4b709'
     unixtime = int(time.time())
     body['timestamp'] = unixtime
     body['appid'] = appid

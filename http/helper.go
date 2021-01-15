@@ -11,15 +11,24 @@ import (
 	"encoding/json"
 	"encoding/base64"
 	"crypto/sha256"
-	"crypto/md5"
+	//"crypto/md5"
 	"io/ioutil"
 	"github.com/valyala/fasthttp"
 )
 
+var (
+	/* 接口验签使用 appid : appsecret (md5sum : sha1sum|base64) */
+	APPID_SECRET = map[string]string{
+		"bdecaa718f290152925e8d570c71adfe" : "YWQ2YjZjNmE3MTVjZTNlNzhiMjk2YjI2MGYyYzI2ZDllNGUyMjRiNyAgLQo=",
+		"1ff3a3d2c1a8c236423ea3fe7bbdcff6" : "ZDlmZjk2YmNlMTEyNDYzN2E4ZGRlMWJhMTYyZDcxZDIxMjRkYTIwZiAgLQo=",
+		"4fcf3871f4a023712bec9ed44ee4b709" : "MjdjNGQxNGU3NjA1OWI0MGVmODIyN2FkOTEwYTViNDQzYTNjNTIyNSAgLQo=",
+	}
 
-/* appid : 密钥文件路径， secret 为 密钥文件签名 */
-var SECRET_KEY = make(map[string]*client.User)
+	/* userid 为 公钥base64 */
+	SECRET_KEY = make(map[string]*client.User)
+)
 
+/* 装入用户密钥 */
 func loadSecretKey(path string) error{
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
@@ -37,10 +46,13 @@ func loadSecretKey(path string) error{
 			return err
 		}
 
-		secret := base64.StdEncoding.EncodeToString(u.SignKey.Bytes())
-	    data := []byte(secret)
-	    appid:=fmt.Sprintf("%x", md5.Sum(data))
-		SECRET_KEY[appid] = u // 保存用户信息
+		//pubkey, _ := cdc.MarshalJSON(*u.CryptoPair.PubKey)
+		//pubkey = pubkey[1 : len(pubkey)-1]
+		pubkey := base64.StdEncoding.EncodeToString(u.CryptoPair.PubKey[:])
+		fmt.Println(pubkey)
+	    //data := []byte(secret)
+	    //appid:=fmt.Sprintf("%x", md5.Sum(data))
+		SECRET_KEY[pubkey] = u // 保存用户信息
 	}
 
 	return nil
@@ -84,7 +96,6 @@ func doJSONWrite(ctx *fasthttp.RequestCtx, code int, obj interface{}) {
 }
 
 
-
 /*
 	接口验签，返回data数据
 */
@@ -94,23 +105,26 @@ func checkSign(content []byte) (*map[string]interface{}, *client.User, error) {
 		return nil, nil, err
 	}
 
-	var appId, version, signType, signData string
+	var appId, userId, version, signType, signData string
 	var timestamp int64
 	var data map[string]interface{}
 	var ok bool
 
 	// 检查参数
 	if appId, ok = fields["appid"].(string); !ok {
-		return nil, nil, fmt.Errorf("need appId")
+		return nil, nil, fmt.Errorf("need appid")
+	}	
+	if userId, ok = fields["userkey"].(string); !ok { // 链用户公钥base64
+		return nil, nil, fmt.Errorf("need userkey")
 	}	
 	if version, ok = fields["version"].(string); !ok {
 		return nil, nil, fmt.Errorf("need version")
 	}	
 	if signType, ok = fields["sign_type"].(string); !ok {
-		return nil, nil, fmt.Errorf("need signType")
+		return nil, nil, fmt.Errorf("need sign_type")
 	}	
 	if signData, ok = fields["sign_data"].(string); !ok {
-		return nil, nil, fmt.Errorf("need signData")
+		return nil, nil, fmt.Errorf("need sign_data")
 	}	
 	if _, ok = fields["timestamp"].(float64); !ok {
 		return nil, nil, fmt.Errorf("need timestamp")
@@ -121,13 +135,17 @@ func checkSign(content []byte) (*map[string]interface{}, *client.User, error) {
 		return nil, nil, fmt.Errorf("need data")
 	}	
 
-	// 取得用户信息
-	me, ok := SECRET_KEY[appId]
+	// 获取 secret，用户密钥的签名串
+	secret, ok := APPID_SECRET[appId]
 	if !ok {
 		return nil, nil, fmt.Errorf("wrong appId")
 	}
-	// 获取 secret，用户密钥的签名串
-	secret := base64.StdEncoding.EncodeToString(me.SignKey.Bytes())
+
+	// 取得用户信息
+	me, ok := SECRET_KEY[userId]
+	if !ok {
+		return nil, nil, fmt.Errorf("wrong userId")
+	}
 
 	// 检查版本
 	if version!="1" {
