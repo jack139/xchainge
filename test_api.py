@@ -26,8 +26,8 @@ if __name__ == '__main__':
     body = {
         'version'  : '1',
         'sign_type' : 'SHA256', 
-        'userkey' : 'qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=',
         'data'     : {
+            'userkey' : 'qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=',
             'exchange_id'    : "qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=",
             'assets_id'    : '123',
             'refer'    : 'zzzz',

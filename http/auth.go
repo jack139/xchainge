@@ -15,13 +15,18 @@ func authRequest(ctx *fasthttp.RequestCtx) {
 	content := ctx.PostBody()
 
 	// 验签
-	reqData, me, err := checkSign(content)
+	reqData, err := checkSign(content)
 	if err!=nil {
 		respError(ctx, 9000, err.Error())
 		return
 	}
 
 	// 检查参数
+	pubkey, ok := (*reqData)["userkey"].(string)
+	if !ok {
+		respError(ctx, 9009, "need userkey")
+		return
+	}
 	dealId, ok := (*reqData)["deal_id"].(string)
 	if !ok {
 		respError(ctx, 9001, "need deal_id")
@@ -30,6 +35,13 @@ func authRequest(ctx *fasthttp.RequestCtx) {
 	fromExchangeId, ok := (*reqData)["from_exchange_id"].(string)
 	if !ok {
 		respError(ctx, 9002, "need from_exchange_id")
+		return
+	}
+
+	// 获取用户密钥
+	me, ok := SECRET_KEY[pubkey]
+	if !ok {
+		respError(ctx, 9011, "wrong userkey")
 		return
 	}
 
@@ -64,16 +76,28 @@ func authResponse(ctx *fasthttp.RequestCtx) {
 	content := ctx.PostBody()
 
 	// 验签
-	reqData, me, err := checkSign(content)
+	reqData, err := checkSign(content)
 	if err!=nil {
 		respError(ctx, 9000, err.Error())
 		return
 	}
 
 	// 检查参数
+	pubkey, ok := (*reqData)["userkey"].(string)
+	if !ok {
+		respError(ctx, 9009, "need userkey")
+		return
+	}
 	authId, ok := (*reqData)["auth_id"].(string)
 	if !ok {
 		respError(ctx, 9001, "need auth_id")
+		return
+	}
+
+	// 获取用户密钥
+	me, ok := SECRET_KEY[pubkey]
+	if !ok {
+		respError(ctx, 9011, "wrong userkey")
 		return
 	}
 

@@ -15,13 +15,25 @@ func queryDeals(ctx *fasthttp.RequestCtx) {
 	content := ctx.PostBody()
 
 	// 验签
-	_, me, err := checkSign(content)
+	reqData, err := checkSign(content)
 	if err!=nil {
 		respError(ctx, 9000, err.Error())
 		return
 	}
 
-	// 检查参数 - 无需参数
+	// 检查参数
+	pubkey, ok := (*reqData)["userkey"].(string)
+	if !ok {
+		respError(ctx, 9009, "need userkey")
+		return
+	}
+
+	// 获取用户密钥
+	me, ok := SECRET_KEY[pubkey]
+	if !ok {
+		respError(ctx, 9011, "wrong userkey")
+		return
+	}
 
 	// 只查询当前用户的交易
 	respBytes, err := me.Query("deal", "_")
@@ -54,13 +66,25 @@ func queryAuths(ctx *fasthttp.RequestCtx) {
 	content := ctx.PostBody()
 
 	// 验签
-	_, me, err := checkSign(content)
+	reqData, err := checkSign(content)
 	if err!=nil {
 		respError(ctx, 9000, err.Error())
 		return
 	}
 
-	// 检查参数 - 无需参数
+	// 检查参数
+	pubkey, ok := (*reqData)["userkey"].(string)
+	if !ok {
+		respError(ctx, 9009, "need userkey")
+		return
+	}
+
+	// 获取用户密钥
+	me, ok := SECRET_KEY[pubkey]
+	if !ok {
+		respError(ctx, 9011, "wrong userkey")
+		return
+	}
 
 	// 只查询当前用户的交易
 	respBytes, err := me.Query("auth", "_")
@@ -93,16 +117,28 @@ func queryByAsstes(ctx *fasthttp.RequestCtx) {
 	content := ctx.PostBody()
 
 	// 验签
-	reqData, me, err := checkSign(content)
+	reqData, err := checkSign(content)
 	if err!=nil {
 		respError(ctx, 9000, err.Error())
 		return
 	}
 
 	// 检查参数
+	pubkey, ok := (*reqData)["userkey"].(string)
+	if !ok {
+		respError(ctx, 9009, "need userkey")
+		return
+	}
 	assetsId, ok := (*reqData)["assets_id"].(string)
 	if !ok {
 		respError(ctx, 9001, "need assets_id")
+		return
+	}
+
+	// 获取用户密钥
+	me, ok := SECRET_KEY[pubkey]
+	if !ok {
+		respError(ctx, 9011, "wrong userkey")
 		return
 	}
 
@@ -137,16 +173,28 @@ func queryByRefer(ctx *fasthttp.RequestCtx) {
 	content := ctx.PostBody()
 
 	// 验签
-	reqData, me, err := checkSign(content)
+	reqData, err := checkSign(content)
 	if err!=nil {
 		respError(ctx, 9000, err.Error())
 		return
 	}
 
 	// 检查参数
+	pubkey, ok := (*reqData)["userkey"].(string)
+	if !ok {
+		respError(ctx, 9009, "need userkey")
+		return
+	}
 	refer, ok := (*reqData)["refer"].(string)
 	if !ok {
 		respError(ctx, 9001, "need refer")
+		return
+	}
+
+	// 获取用户密钥
+	me, ok := SECRET_KEY[pubkey]
+	if !ok {
+		respError(ctx, 9011, "wrong userkey")
 		return
 	}
 
@@ -180,16 +228,16 @@ func queryBlock(ctx *fasthttp.RequestCtx) {
 	content := ctx.PostBody()
 
 	// 验签
-	reqData, me, err := checkSign(content)
+	reqData, err := checkSign(content)
 	if err!=nil {
 		respError(ctx, 9000, err.Error())
 		return
 	}
 
 	// 检查参数
-	exchangeId, ok := (*reqData)["exchange_id"].(string)
+	pubkey, ok := (*reqData)["userkey"].(string)
 	if !ok {
-		respError(ctx, 9001, "need exchange_id")
+		respError(ctx, 9009, "need userkey")
 		return
 	}
 	blockId, ok := (*reqData)["block_id"].(string)
@@ -198,7 +246,14 @@ func queryBlock(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	respBytes, err := me.QueryTx(exchangeId, blockId)
+	// 获取用户密钥
+	me, ok := SECRET_KEY[pubkey]
+	if !ok {
+		respError(ctx, 9011, "wrong userkey")
+		return
+	}
+
+	respBytes, err := me.QueryTx(pubkey, blockId)
 	if err!=nil {
 		respError(ctx, 9003, err.Error())
 		return
@@ -228,16 +283,16 @@ func queryRawBlock(ctx *fasthttp.RequestCtx) {
 	content := ctx.PostBody()
 
 	// 验签
-	reqData, me, err := checkSign(content)
+	reqData, err := checkSign(content)
 	if err!=nil {
 		respError(ctx, 9000, err.Error())
 		return
 	}
 
 	// 检查参数
-	exchangeId, ok := (*reqData)["exchange_id"].(string)
+	pubkey, ok := (*reqData)["userkey"].(string)
 	if !ok {
-		respError(ctx, 9001, "need exchange_id")
+		respError(ctx, 9009, "need userkey")
 		return
 	}
 	blockId, ok := (*reqData)["block_id"].(string)
@@ -246,7 +301,14 @@ func queryRawBlock(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	respBytes, err := me.QueryRawBlock(exchangeId, blockId)
+	// 获取用户密钥
+	me, ok := SECRET_KEY[pubkey]
+	if !ok {
+		respError(ctx, 9011, "wrong userkey")
+		return
+	}
+
+	respBytes, err := me.QueryRawBlock(pubkey, blockId)
 	if err!=nil {
 		respError(ctx, 9003, err.Error())
 		return

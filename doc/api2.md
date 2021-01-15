@@ -64,17 +64,14 @@
 
 | 序号 | 接口名称        | 接口功能                                     |
 | :--: | :-------------- | -------------------------------------------- |
-|  1   | deal            | 提交买卖交易                                 |
-|  2   | auth_request    | 请求授权查询指定交易                         |
-|  3   | auth_response   | 授权查看指定交易                             |
+|  1   | biz_register    | 用户注册                                     |
+|  2   | biz_contract    | 签合同                                       |
+|  3   | biz_delivery    | 验收                                         |
 |  4   | query_deals     | 查询自己的所以交易                           |
-|  5   | query_auths     | 查询授权请求和授权响应                       |
-|  6   | query_by_assets | 按资产ID进行检索（可能包括其他链用户的区块） |
-|  7   | query_by_refer  | 按参考值进行检索                             |
-|  8   | query_block     | 按区块ID查询制定区块                         |
-|  9   | query_raw_block | 按区块ID查询制定区块原始数据                 |
-|  10  | ipfs_upload     | 数据上传到ipfs                               |
-|  11  | ipfs_download   | 从ipfs下载数据                               |
+|  5   | query_by_assets | 按资产ID进行检索（可能包括其他链用户的区块） |
+|  6   | query_by_refer  | 按参考值进行检索                             |
+|  7   | query_block     | 按区块ID查询制定区块                         |
+|  8   | query_raw_block | 按区块ID查询制定区块原始数据                 |
 
 
 
@@ -218,11 +215,12 @@ base64后结果：
 
 输入参数（data字段下）
 
-| 参数     | 类型   | 说明               |
-| -------- | ------ | ------------------ |
-| pubkey_a | string | 甲方公钥           |
-| pubkey_b | string | 乙方公钥           |
-| data     | base64 | 合同照片base64编码 |
+| 参数      | 类型   | 说明               |
+| --------- | ------ | ------------------ |
+| userkey_a | string | 甲方公钥           |
+| userkey_b | string | 乙方公钥           |
+| assets_id | string | 合同编号           |
+| data      | base64 | 合同照片base64编码 |
 
 返回结果
 
@@ -230,7 +228,7 @@ base64后结果：
 | ---- | ---------------- | --------------------------------------- |
 | code | int              | 状态代码，0 表示成功，非0 表示出错      |
 | msg  | string           | 成功时返回success；出错时，返回出错信息 |
-| data | json | 无                                      |
+| data | json | 区块id                              |
 
 请求示例
 
@@ -258,11 +256,12 @@ base64后结果：
 
 输入参数（data字段下）
 
-| 参数     | 类型   | 说明               |
-| -------- | ------ | ------------------ |
-| pubkey_a | string | 甲方公钥           |
-| pubkey_b | string | 乙方公钥           |
-| data     | base64 | 验收照片base64编码 |
+| 参数      | 类型   | 说明               |
+| --------- | ------ | ------------------ |
+| userkey_a | string | 甲方公钥           |
+| userkey_b | string | 乙方公钥           |
+| assets_id | string | 合同编号           |
+| data      | base64 | 验收照片base64编码 |
 
 返回结果
 
@@ -270,7 +269,7 @@ base64后结果：
 | ---- | ------ | --------------------------------------- |
 | code | int    | 状态代码，0 表示成功，非0 表示出错      |
 | msg  | string | 成功时返回success；出错时，返回出错信息 |
-| data | json   | 无                                      |
+| data | json   | 区块id                                  |
 
 请求示例
 
@@ -302,9 +301,9 @@ base64后结果：
 
 输入参数（data字段下）
 
-| 参数 | 类型 | 说明 |
-| ---- | ---- | ---- |
-| 无   |      |      |
+| 参数    | 类型   | 说明     |
+| ------- | ------ | -------- |
+| userkey | string | 用户公钥 |
 
 返回结果
 
@@ -320,7 +319,9 @@ base64后结果：
 {
     "version": "1", 
     "sign_type": "SHA256", 
-    "data": {}, 
+    "data": {
+        "pubkey": "qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=", 
+    }, 
     "timestamp": 1609384428, 
     "appid": "dec213b6aced0336932e272f3faaf9e4", 
     "sign_data": "N2IzZTBjOGE1NzZlMDM4YjY0Zjg2Y2YwN2NlMjc4ZjdjNWQyYjdkYWI4N2UyYWNmMDg1Y2E2M2YzYWYxMGMzNA=="
@@ -352,77 +353,7 @@ base64后结果：
 
 
 
-
-
-##### 3.2 按资产ID查询历史交易
-
-请求URL
-
-> http://<host>:<port>/api/query_by_assets
-
-请求方式
-
-> POST
-
-输入参数（data字段下）
-
-| 参数      | 类型   | 说明   |
-| --------- | ------ | ------ |
-| assets_id | string | 资产ID |
-
-返回结果
-
-| 参数 | 类型   | 说明                                    |
-| ---- | ------ | --------------------------------------- |
-| code | int    | 状态代码，0 表示成功，非0 表示出错      |
-| msg  | string | 成功时返回success；出错时，返回出错信息 |
-| data | json   | 相同资产ID的交易列表                    |
-
-> 说明：
->
-> 按资产ID查询时没有限制链用户范围。因此，如果链用户之间使用统一的资产ID，并在多个链用户之间发生交易，则返回的数据可能包含不用链用户的交易数据。当前链用户解密自己交易的加密数据，其他链用户的加密数据需要提交授权请求并授权后才能看到解密数据。
-
-请求示例
-
-```json
-{
-    "version": "1", 
-    "sign_type": "SHA256", 
-    "data": {
-        "assets_id": "123"
-    }, 
-    "timestamp": 1609384684, 
-    "appid": "dec213b6aced0336932e272f3faaf9e4", 
-    "sign_data": "YTg4NjliYjA3NzA5NmE3YzRmNTBmODc4OGM3ZGMyNzUzN2JjYjlmM2VkNjkyOTdiZjljMzExNDEzMzRkZjgwMQ=="
-}
-```
-
-返回示例
-
-```json
-{
-    "code": 0, 
-    "data": {
-        "deals": [
-            {
-                "action": 1, 
-                "assets_id": "123", 
-                "data": "zzzzz", 
-                "exchange_id": "qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=", 
-                "id": "59534f7d-db5b-4792-8937-09996638c3d4", 
-                "refer": "zzzzz", 
-                "send_time": "2020-12-31T03:06:48.535213018Z", 
-                "type": "DEAL"
-            }
-        ]
-    }, 
-    "msg": "success"
-}
-```
-
-
-
-##### 3.3 按参考数据查询历史交易
+##### 3.2 按合同号查询历史交易
 
 请求URL
 
@@ -434,9 +365,10 @@ base64后结果：
 
 输入参数（data字段下）
 
-| 参数  | 类型   | 说明     |
-| ----- | ------ | -------- |
-| refer | string | 参考数据 |
+| 参数    | 类型   | 说明     |
+| ------- | ------ | -------- |
+| userkey | string | 用户公钥 |
+| refer   | string | 合同号   |
 
 返回结果
 
@@ -453,7 +385,8 @@ base64后结果：
     "version": "1", 
     "sign_type": "SHA256", 
     "data": {
-        "refer": "zzzzz"
+        "pubkey": "qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=", 
+        "refer": "1234"
 	}, 
     "timestamp": 1609384738, 
     "appid": "dec213b6aced0336932e272f3faaf9e4", 
@@ -498,10 +431,10 @@ base64后结果：
 
 输入参数（data字段下）
 
-| 参数        | 类型   | 说明                         |
-| ----------- | ------ | ---------------------------- |
-| exchange_id | string | 区块提交者的ID（链用户公钥） |
-| block_id    | string | 区块ID                       |
+| 参数     | 类型   | 说明     |
+| -------- | ------ | -------- |
+| userkey  | string | 用户公钥 |
+| block_id | string | 区块ID   |
 
 返回结果
 
@@ -522,7 +455,7 @@ base64后结果：
     "version": "1", 
     "sign_type": "SHA256", 
     "data": {
-        "exchange_id": "qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=", 
+        "pubkey": "qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=", 
 		"block_id": "59534f7d-db5b-4792-8937-09996638c3d4"
     }, 
     "timestamp": 1609385156, 
@@ -566,10 +499,10 @@ base64后结果：
 
 输入参数（data字段下）
 
-| 参数        | 类型   | 说明                         |
-| ----------- | ------ | ---------------------------- |
-| exchange_id | string | 区块提交者的ID（链用户公钥） |
-| block_id    | string | 区块ID                       |
+| 参数     | 类型   | 说明     |
+| -------- | ------ | -------- |
+| userkey  | string | 用户公钥 |
+| block_id | string | 区块ID   |
 
 返回结果
 
@@ -590,7 +523,7 @@ base64后结果：
     "version": "1", 
     "sign_type": "SHA256", 
     "data": {
-        "exchange_id": "qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=", 
+        "pubkey": "qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=", 
         "block_id": "59534f7d-db5b-4792-8937-09996638c3d4"
     }, 
     "timestamp": 1609385186, 

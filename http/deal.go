@@ -16,15 +16,20 @@ func deal(ctx *fasthttp.RequestCtx) {
 	content := ctx.PostBody()
 
 	// 验签
-	reqData, me, err := checkSign(content)
+	reqData, err := checkSign(content)
 	if err!=nil {
 		respError(ctx, 9000, err.Error())
 		return
 	}
 
 	// 检查参数
+	pubkey, ok := (*reqData)["userkey"].(string)
+	if !ok {
+		respError(ctx, 9009, "need userkey")
+		return
+	}
 	var action int
-	_, ok := (*reqData)["action"].(float64)
+	_, ok = (*reqData)["action"].(float64)
 	if !ok {
 		respError(ctx, 9001, "need action")
 		return
@@ -42,6 +47,13 @@ func deal(ctx *fasthttp.RequestCtx) {
 		return
 	}
 	refer, _ := (*reqData)["refer"].(string)
+
+	// 获取用户密钥
+	me, ok := SECRET_KEY[pubkey]
+	if !ok {
+		respError(ctx, 9011, "wrong userkey")
+		return
+	}
 
 	// 提交交易
 	respBytes, err := me.Deal(strconv.Itoa(int(action)), assetsId, data, refer)

@@ -15,7 +15,7 @@ func doNonthing(ctx *fasthttp.RequestCtx) {
 	content := ctx.PostBody()
 
 	// 验签
-	data, _, err := checkSign(content)
+	data, err := checkSign(content)
 	if err!=nil {
 		respError(ctx, 9000, err.Error())
 		return

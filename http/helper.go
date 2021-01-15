@@ -99,62 +99,62 @@ func doJSONWrite(ctx *fasthttp.RequestCtx, code int, obj interface{}) {
 /*
 	接口验签，返回data数据
 */
-func checkSign(content []byte) (*map[string]interface{}, *client.User, error) {
+func checkSign(content []byte) (*map[string]interface{}, error) {
 	fields := make(map[string]interface{})
 	if err := json.Unmarshal(content, &fields); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	var appId, userId, version, signType, signData string
+	var appId, version, signType, signData string
 	var timestamp int64
 	var data map[string]interface{}
 	var ok bool
 
 	// 检查参数
 	if appId, ok = fields["appid"].(string); !ok {
-		return nil, nil, fmt.Errorf("need appid")
+		return nil, fmt.Errorf("need appid")
 	}	
-	if userId, ok = fields["userkey"].(string); !ok { // 链用户公钥base64
-		return nil, nil, fmt.Errorf("need userkey")
-	}	
+	//if userId, ok = fields["userkey"].(string); !ok { // 链用户公钥base64
+	//	return nil, nil, fmt.Errorf("need userkey")
+	//}	
 	if version, ok = fields["version"].(string); !ok {
-		return nil, nil, fmt.Errorf("need version")
+		return nil, fmt.Errorf("need version")
 	}	
 	if signType, ok = fields["sign_type"].(string); !ok {
-		return nil, nil, fmt.Errorf("need sign_type")
+		return nil, fmt.Errorf("need sign_type")
 	}	
 	if signData, ok = fields["sign_data"].(string); !ok {
-		return nil, nil, fmt.Errorf("need sign_data")
+		return nil, fmt.Errorf("need sign_data")
 	}	
 	if _, ok = fields["timestamp"].(float64); !ok {
-		return nil, nil, fmt.Errorf("need timestamp")
+		return nil, fmt.Errorf("need timestamp")
 	} else {
 		timestamp = int64(fields["timestamp"].(float64))	// 返回整数
 	}
 	if data, ok = fields["data"].(map[string]interface{}); !ok {
-		return nil, nil, fmt.Errorf("need data")
+		return nil, fmt.Errorf("need data")
 	}	
 
 	// 获取 secret，用户密钥的签名串
 	secret, ok := APPID_SECRET[appId]
 	if !ok {
-		return nil, nil, fmt.Errorf("wrong appId")
+		return nil, fmt.Errorf("wrong appId")
 	}
 
 	// 取得用户信息
-	me, ok := SECRET_KEY[userId]
-	if !ok {
-		return nil, nil, fmt.Errorf("wrong userId")
-	}
+	//me, ok := SECRET_KEY[userId]
+	//if !ok {
+	//	return nil, nil, fmt.Errorf("wrong userId")
+	//}
 
 	// 检查版本
 	if version!="1" {
-		return nil, nil, fmt.Errorf("wrong version")
+		return nil, fmt.Errorf("wrong version")
 	}
 
 	// 检查签名类型
 	if signType!="SHA256" {
-		return nil, nil, fmt.Errorf("unknown signType")
+		return nil, fmt.Errorf("unknown signType")
 	}
 
 	// 生成参数的key，并排序
@@ -192,10 +192,10 @@ func checkSign(content []byte) (*map[string]interface{}, *client.User, error) {
 	if signStr!=signData {
 		fmt.Println(signStr)
 		fmt.Println(signData)		
-		return nil, nil, fmt.Errorf("wrong signature")
+		return nil, fmt.Errorf("wrong signature")
 	}
 
-	return &data, me, nil
+	return &data, nil
 }
 
 // 返回 map 所有 key
