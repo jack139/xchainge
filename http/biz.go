@@ -52,11 +52,21 @@ func bizRegister(ctx *fasthttp.RequestCtx) {
 	pubkey := base64.StdEncoding.EncodeToString(me.CryptoPair.PubKey[:])
 	SECRET_KEY[pubkey] = me // 保存用户信息
 
+	// 准备数据
+	var loadData = map[string]interface{}{
+		"user_name" : userName,
+		"user_type" : userType,
+	}
+	loadBytes, err := json.Marshal(loadData)
+	if err != nil {
+		respError(ctx, 9008, err.Error())
+		return
+	}
 
 	// 提交交易
 	// data --> user_name,  refer --> user_type
 	// user_type: "office" 事务所；"supplier" 供应商；"buyer" 企业用户
-	respBytes, err := me.Deal("13", "_", userName, userType) 
+	respBytes, err := me.Deal("13", "*", string(loadBytes), "") 
 	if err != nil {
 		respError(ctx, 9004, err.Error())
 		return

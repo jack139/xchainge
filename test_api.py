@@ -27,14 +27,14 @@ if __name__ == '__main__':
         'version'  : '1',
         'sign_type' : 'SHA256', 
         'data'     : {
-            'userkey' : 'qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=',
+            'userkey' : 'qVWdN0d5qtM3u6DpJtPx6l1k7CzEN/lvrdmDju9Ykmc=',
             'userkey_a' : 'qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=',
             'userkey_b' : 'j9cIgmm17x0aLApf0i20UR7Pj34Ua/JwyWOuBGgYIFg=',
-            'assets_id'    : '123',
+            'assets_id'    : '*',
             'data'     : 'zzzzz',
             'user_name' : '测试1',
             'user_type' : 'buyer',
-            #'block_id' : '59534f7d-db5b-4792-8937-09996638c3d4',
+            'block_id' : 'c7f855d9-affe-4e43-89ed-869190bdd983',
         }
     }
 
@@ -54,7 +54,7 @@ if __name__ == '__main__':
         #signature_str = sm2.SM2withSM3_sign_base64(sign_str)
         pass
 
-    print(sign_str.encode('utf-8'))
+    #print(sign_str.encode('utf-8'))
     #print(sha256)
     #print(signature_str)
 
@@ -66,7 +66,8 @@ if __name__ == '__main__':
     pool = urllib3.PoolManager(num_pools=2, timeout=180, retries=False)
 
     host = 'http://%s:%s'%(hostname, port)
-    url = host+'/api/biz_register'
+    url = host+'/api/query_by_assets'
+    #url = host+'/api/biz_register'
 
     start_time = datetime.now()
     r = pool.urlopen('POST', url, body=body)

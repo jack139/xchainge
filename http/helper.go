@@ -70,7 +70,7 @@ func respJson(ctx *fasthttp.RequestCtx, data *map[string] interface{}) {
 }
 
 func respError(ctx *fasthttp.RequestCtx, code int, msg string) {
-	log.Println("Error: ", msg)
+	log.Println("Error: ", code, msg)
 	respJson := map[string] interface{} {
 		"code" : code,
 		"msg"  : msg,

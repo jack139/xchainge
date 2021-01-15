@@ -1,11 +1,31 @@
 package http
 
 import (
+	"strings"
 	"log"
 	"encoding/json"
 	"github.com/valyala/fasthttp"
 )
 
+/* data字段是已序列化的json串，反序列化一下 */
+func unmarshalData(respData *[]map[string]interface{}) error {
+	// 处理data字段
+	for _, item := range *respData {
+		_, ok := item["data"]
+		if !ok {
+			continue
+		}
+		if !strings.HasPrefix(item["data"].(string), "{") {
+			continue
+		}
+		var data map[string]interface{}
+		if err := json.Unmarshal([]byte(item["data"].(string)), &data); err != nil {
+			return err
+		}
+		item["data"] = data
+	}
+	return nil
+}
 
 /* 查询交易， 只允许查询自己的 */
 func queryDeals(ctx *fasthttp.RequestCtx) {
@@ -50,6 +70,14 @@ func queryDeals(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
+	// 处理data字段
+	err = unmarshalData(&respData)
+	if err!=nil{
+		respError(ctx, 9014, err.Error())
+		return		
+	}
+
+	// 返回结果
 	resp := map[string] interface{} {
 		"deals" : respData,
 	}
@@ -157,6 +185,13 @@ func queryByAsstes(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
+	// 处理data字段
+	err = unmarshalData(&respData)
+	if err!=nil{
+		respError(ctx, 9014, err.Error())
+		return		
+	}
+
 	resp := map[string] interface{} {
 		"deals" : respData,
 	}
@@ -213,6 +248,13 @@ func queryByRefer(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
+	// 处理data字段
+	err = unmarshalData(&respData)
+	if err!=nil{
+		respError(ctx, 9014, err.Error())
+		return		
+	}
+
 	resp := map[string] interface{} {
 		"deals" : respData,
 	}
@@ -267,6 +309,16 @@ func queryBlock(ctx *fasthttp.RequestCtx) {
 			return
 		}
 	}
+
+
+	// 处理data字段
+	temp := []map[string]interface{}{ respData }
+	err = unmarshalData(&temp)
+	if err!=nil{
+		respError(ctx, 9014, err.Error())
+		return		
+	}
+
 	resp := map[string] interface{} {
 		"blcok" : respData,
 	}
