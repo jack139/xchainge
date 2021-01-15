@@ -29,7 +29,7 @@ func main() {
 	root.AddCommand(commands.GenNodeKeyCmd)
 	root.AddCommand(commands.GenValidatorCmd)
 	root.AddCommand(commands.InitFilesCmd)
-	root.AddCommand(commands.ResetAllCmd)
+	//root.AddCommand(commands.ResetAllCmd)
 	root.AddCommand(commands.ShowNodeIDCmd)
 	root.AddCommand(commands.TestnetFilesCmd)
 

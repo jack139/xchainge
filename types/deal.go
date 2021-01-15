@@ -4,13 +4,6 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-const (
-	Buy byte = 0x01
-	Sell byte = 0x02
-	ChangeOwner byte = 0x03
-)
-
-
 // 交易信息
 type Deal struct {
 	ID         uuid.UUID // 交易ID

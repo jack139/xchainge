@@ -4,12 +4,6 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-const (
-	AuthQuery byte = 0x04
-	DoQuery byte = 0x05
-	DeAuthQuery byte = 0x06
-)
-
 // 授权操作
 // ToExchangeID 请求 FromExchangeID 授权，指定 DealID，进入 FromExchangeID 的链表
 // FromExchangeID 加密数据 Data 后 返回 ToExchangeID，进入 ToExchangeID 的链表
