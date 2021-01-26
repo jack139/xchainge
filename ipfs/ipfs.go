@@ -1,8 +1,9 @@
-package main
+package ipfs
 
 import (
 	"context"
 	"fmt"
+	"strings"
 	"path/filepath"
 
 	config "github.com/ipfs/go-ipfs-config"
@@ -80,7 +81,7 @@ func spawnDefault(ctx context.Context) (icore.CoreAPI, error) {
 }
 
 
-func main() {
+func Add(filedata []byte) (string, error) {
 	/// Getting a IPFS node running
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -88,28 +89,39 @@ func main() {
 	// Spawn a node using the default path (~/.ipfs), assuming that a repo exists there already
 	ipfs, err := spawnDefault(ctx)
 	if err != nil {
-		fmt.Println("No IPFS repo available on the default path: ", err.Error())
-		panic(err)
+		return "", fmt.Errorf("No IPFS repo available on the default path: %s", err)
 	}
 
 	// 字符串写入ipfs
-	someContent := files.NewBytesFile([]byte("test2")) 
+	someContent := files.NewBytesFile(filedata) 
 	cidFile, err := ipfs.Unixfs().Add(ctx, someContent)
 	if err != nil {
-		panic(fmt.Errorf("Could not add File: %s", err))
+		return "", fmt.Errorf("Could not add File: %s", err)
 	}
+	//fmt.Println("cid: ", cidFile.String())
 
-	cid := cidFile.String()
+	return strings.Split(cidFile.String(), "/")[2], nil
 
-	fmt.Println("cid: ", cid)
+}
+
+func Get(cid string) ([]byte, error) {
+	/// Getting a IPFS node running
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Spawn a node using the default path (~/.ipfs), assuming that a repo exists there already
+	ipfs, err := spawnDefault(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("No IPFS repo available on the default path: %s", err)
+	}
 
 	// 重新生成路径
 	cidPath := path.New(cid)
 
-	// 获取文件	
+	// 获取文件
 	rootNodeFile, err := ipfs.Unixfs().Get(ctx, cidPath)
 	if err != nil {
-		panic(fmt.Errorf("Could not get file with CID: %s", err))
+		return nil, fmt.Errorf("Could not get file with CID: %s", err)
 	}
 
 	// 文件大小
@@ -118,9 +130,9 @@ func main() {
 	// 读出内容
 	longBuf := make([]byte, size)
 	if _, err := rootNodeFile.(files.File).Read(longBuf); err != nil {
-		fmt.Println("error:", err)
+		return nil, fmt.Errorf("Read content fail: %s", err)
 	}
 
-	fmt.Printf("content: %v\n", string(longBuf))
-
+	//fmt.Printf("content: %v\n", string(longBuf))
+	return longBuf, nil
 }

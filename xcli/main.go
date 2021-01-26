@@ -12,6 +12,7 @@ package main
 
 import (
 	"xchainge/client"
+	"xchainge/ipfs"
 	"xchainge/http"
 
 	"errors"
@@ -281,6 +282,38 @@ var (
 		},
 	}
 
+	ipfsAdd = &cobra.Command{	// ipfs add
+		Use:   "ipfsAdd <text>",
+		Short: "add text to ipfs",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) < 1 {
+				return errors.New("need text")
+			} 
+			text := args[0]
+			cid, err := ipfs.Add([]byte(text))
+			if err==nil {
+				fmt.Printf("IPFS add ==> %s\n", cid)
+			}
+			return err
+		},
+	}
+
+	ipfsGet = &cobra.Command{	// ipfs get
+		Use:   "ipfsGet <cid>",
+		Short: "get text from IPFS",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) < 1 {
+				return errors.New("need cid")
+			} 
+			cid := args[0]
+			respBytes, err := ipfs.Get(cid)
+			if err==nil {
+				fmt.Printf("IPFS get ==> %s\n", respBytes)
+			}
+			return err
+		},
+	}
+
 )
 
 func init() {
@@ -323,7 +356,8 @@ func init() {
 	rootCmd.AddCommand(httpCmd)
 	rootCmd.AddCommand(creditCmd)
 	rootCmd.AddCommand(queryCreditCmd)
-
+	rootCmd.AddCommand(ipfsAdd)
+	rootCmd.AddCommand(ipfsGet)
 }
 
 func main() {
