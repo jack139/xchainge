@@ -45,7 +45,6 @@ func createNode(ctx context.Context, repoPath string) (icore.CoreAPI, error) {
 	}
 
 	// Construct the node
-
 	nodeOptions := &core.BuildCfg{
 		Online:  true,
 		Routing: libp2p.DHTOption, // This option sets the node to be a full DHT node (both fetching and storing DHT Records)
@@ -81,10 +80,9 @@ func spawnDefault(ctx context.Context) (icore.CoreAPI, error) {
 
 
 func main() {
-	/// --- Part I: Getting a IPFS node running
+	/// Getting a IPFS node running
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-
 
 	// Spawn a node using the default path (~/.ipfs), assuming that a repo exists there already
 	ipfs, err := spawnDefault(ctx)
@@ -100,9 +98,6 @@ func main() {
 		panic(fmt.Errorf("Could not add File: %s", err))
 	}
 	fmt.Println("cid: ", cidFile.String())
-
-	//outputBasePath := "./data/"
-	//outputPathFile := outputBasePath + strings.Split(cidFile.String(), "/")[2]
 
 	// 获取文件
 	rootNodeFile, err := ipfs.Unixfs().Get(ctx, cidFile)
@@ -120,10 +115,5 @@ func main() {
 	}
 
 	fmt.Printf("content: %v\n", string(longBuf))
-
-	//err = files.WriteTo(rootNodeFile, outputPathFile)
-	//if err != nil {
-	//	panic(fmt.Errorf("Could not write out the fetched CID: %s", err))
-	//}
 
 }
