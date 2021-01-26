@@ -410,7 +410,7 @@ base64后结果：
             {
                 "action": 1, 
                 "assets_id": "123", 
-                "data": "zzzzz", 
+                "image": "zzzzz", 
                 "exchange_id": "qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=", 
                 "id": "59534f7d-db5b-4792-8937-09996638c3d4", 
                 "refer": "zzzzz", 
@@ -478,7 +478,7 @@ base64后结果：
             {
                 "action": 1, 
                 "assets_id": "123", 
-                "data": "zzzzz", 
+                "image": "zzzzz", 
                 "exchange_id": "qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=", 
                 "id": "59534f7d-db5b-4792-8937-09996638c3d4", 
                 "refer": "zzzzz", 
@@ -547,7 +547,7 @@ base64后结果：
         "blcok": {
             "action": 1, 
             "assets_id": "123", 
-            "data": "zzzzz", 
+            "image": "zzzzz", 
             "exchange_id": "qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=", 
             "id": "59534f7d-db5b-4792-8937-09996638c3d4", 
             "refer": "zzzzz", 

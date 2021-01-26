@@ -38,11 +38,11 @@ func setupPlugins(externalPluginsPath string) error {
 }
 
 // Creates an IPFS node and returns its coreAPI
-func createNode(ctx context.Context, repoPath string) (icore.CoreAPI, error) {
+func createNode(ctx context.Context, repoPath string) (*core.IpfsNode, icore.CoreAPI, error) {
 	// Open the repo
 	repo, err := fsrepo.Open(repoPath)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// Construct the node
@@ -55,38 +55,41 @@ func createNode(ctx context.Context, repoPath string) (icore.CoreAPI, error) {
 
 	node, err := core.NewNode(ctx, nodeOptions)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// Attach the Core API to the constructed node
-	return coreapi.NewCoreAPI(node)
+	coreApi, err := coreapi.NewCoreAPI(node)
+
+	return node, coreApi, err
 }
 
 // Spawns a node on the default repo location, if the repo exists
-func spawnDefault(ctx context.Context) (icore.CoreAPI, error) {
+func spawnDefault(ctx context.Context, initPlugins bool) (*core.IpfsNode, icore.CoreAPI, error) {
 	defaultPath, err := config.PathRoot()
 	if err != nil {
 		// shouldn't be possible
-		return nil, err
+		return nil, nil, err
 	}
 	fmt.Println("repo: ", defaultPath)
 
-	if err := setupPlugins(defaultPath); err != nil {
-		return nil, err
-
+	if initPlugins {
+		if err := setupPlugins(defaultPath); err != nil {
+			return nil, nil, err
+		}
 	}
 
 	return createNode(ctx, defaultPath)
 }
 
 
-func main() {
+func add() string{
 	/// Getting a IPFS node running
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	// Spawn a node using the default path (~/.ipfs), assuming that a repo exists there already
-	ipfs, err := spawnDefault(ctx)
+	node, ipfs, err := spawnDefault(ctx, true)
 	if err != nil {
 		fmt.Println("No IPFS repo available on the default path: ", err.Error())
 		panic(err)
@@ -102,6 +105,24 @@ func main() {
 	cid := cidFile.String()
 
 	fmt.Println("cid: ", cid)
+
+	node.Close()
+
+	return cid
+}
+
+func get(cid string){
+	/// Getting a IPFS node running
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Spawn a node using the default path (~/.ipfs), assuming that a repo exists there already
+	node, ipfs, err := spawnDefault(ctx, false)
+	if err != nil {
+		fmt.Println("No IPFS repo available on the default path: ", err.Error())
+		panic(err)
+	}
+
 
 	// 重新生成路径
 	cidPath := path.New(cid)
@@ -123,4 +144,10 @@ func main() {
 
 	fmt.Printf("content: %v\n", string(longBuf))
 
+	node.Close()
+}
+
+func main() {
+	c := add()
+	get(c)
 }

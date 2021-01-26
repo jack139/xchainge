@@ -18,8 +18,13 @@ import (
 	"github.com/ipfs/go-ipfs/repo/fsrepo"
 )
 
+// plugins智能初始化一次
+var pluginsOK = bool(false)
 
 func setupPlugins(externalPluginsPath string) error {
+	if pluginsOK {
+		return nil
+	}
 	// Load any external plugins if available on externalPluginsPath
 	plugins, err := loader.NewPluginLoader(filepath.Join(externalPluginsPath, "plugins"))
 	if err != nil {
@@ -35,6 +40,7 @@ func setupPlugins(externalPluginsPath string) error {
 		return fmt.Errorf("error initializing plugins: %s", err)
 	}
 
+	pluginsOK = true
 	return nil
 }
 
@@ -80,7 +86,6 @@ func spawnDefault(ctx context.Context) (icore.CoreAPI, error) {
 	return createNode(ctx, defaultPath)
 }
 
-
 func Add(filedata []byte) (string, error) {
 	/// Getting a IPFS node running
 	ctx, cancel := context.WithCancel(context.Background())
@@ -96,7 +101,7 @@ func Add(filedata []byte) (string, error) {
 	someContent := files.NewBytesFile(filedata) 
 	cidFile, err := ipfs.Unixfs().Add(ctx, someContent)
 	if err != nil {
-		return "", fmt.Errorf("Could not add File: %s", err)
+		return "", fmt.Errorf("Could not add File to IPFS: %s", err)
 	}
 	//fmt.Println("cid: ", cidFile.String())
 
@@ -130,7 +135,7 @@ func Get(cid string) ([]byte, error) {
 	// 读出内容
 	longBuf := make([]byte, size)
 	if _, err := rootNodeFile.(files.File).Read(longBuf); err != nil {
-		return nil, fmt.Errorf("Read content fail: %s", err)
+		return nil, fmt.Errorf("Read IPFS content fail: %s", err)
 	}
 
 	//fmt.Printf("content: %v\n", string(longBuf))

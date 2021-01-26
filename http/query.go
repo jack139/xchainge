@@ -1,6 +1,8 @@
 package http
 
 import (
+	"xchainge/ipfs"
+
 	"strings"
 	"log"
 	"encoding/json"
@@ -22,6 +24,17 @@ func unmarshalData(respData *[]map[string]interface{}) error {
 		if err := json.Unmarshal([]byte(item["data"].(string)), &data); err != nil {
 			return err
 		}
+		
+		// 处理image 字段，从ipfs读取
+		_, ok = data["image"]
+		if ok && len(data["image"].(string))>0 {
+			image_data, err := ipfs.Get(data["image"].(string))
+			if err!=nil {
+				return err
+			}
+			data["image"] = string(image_data)
+		}		
+
 		item["data"] = data
 	}
 	return nil

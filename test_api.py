@@ -5,6 +5,9 @@ from datetime import datetime
 
 urllib3.disable_warnings()
 
+with open("doc/exchainge.png", 'rb') as f:
+    img_data = f.read()
+img_data = base64.b64encode(img_data).decode('utf-8')
 
 # 生成参数字符串
 def gen_param_str(param1):
@@ -27,14 +30,14 @@ if __name__ == '__main__':
         'version'  : '1',
         'sign_type' : 'SHA256', 
         'data'     : {
-            'userkey' : 'qVWdN0d5qtM3u6DpJtPx6l1k7CzEN/lvrdmDju9Ykmc=',
+            'userkey'   : 'qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=',
             'userkey_a' : 'qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=',
             'userkey_b' : 'j9cIgmm17x0aLApf0i20UR7Pj34Ua/JwyWOuBGgYIFg=',
-            'assets_id'    : '*',
-            'data'     : 'zzzzz',
+            'assets_id' : '123',
+            'data'      : 'zzzzzxxxxxxx',
             'user_name' : '测试1',
             'user_type' : 'buyer',
-            'block_id' : 'c7f855d9-affe-4e43-89ed-869190bdd983',
+            'block_id'  : '813072d5-3935-44f8-b090-be486526998e',
         }
     }
 
@@ -61,13 +64,15 @@ if __name__ == '__main__':
     body['sign_data'] = signature_str
 
     body = json.dumps(body)
-    print(body)
+    #print(body)
 
     pool = urllib3.PoolManager(num_pools=2, timeout=180, retries=False)
 
     host = 'http://%s:%s'%(hostname, port)
-    url = host+'/api/query_by_assets'
+    #url = host+'/api/query_by_assets'
     #url = host+'/api/biz_register'
+    #url = host+'/api/biz_contract'
+    url = host+'/api/query_block'
 
     start_time = datetime.now()
     r = pool.urlopen('POST', url, body=body)

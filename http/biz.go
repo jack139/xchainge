@@ -2,6 +2,7 @@ package http
 
 import (
 	"xchainge/client"
+	"xchainge/ipfs"
 
 	"strconv"
 	"log"
@@ -142,6 +143,10 @@ func doContractDelivery(ctx *fasthttp.RequestCtx, action int) {
 		respError(ctx, 9002, "need data")
 		return
 	}
+	if len(data)>5242880 {
+		respError(ctx, 9003, "data too large: over 5M")
+		return		
+	}
 
 	// 获取用户密钥
 	meA, ok := SECRET_KEY[pubkeyA]
@@ -157,9 +162,21 @@ func doContractDelivery(ctx *fasthttp.RequestCtx, action int) {
 		return
 	}
 
+	// data 存 ipfs
+	var cid string
+	if len(data)>0 {
+		cid, err = ipfs.Add([]byte(data))
+		if err!=nil {
+			respError(ctx, 9012, err.Error())
+			return
+		}
+	} else {
+		cid = ""
+	}
+
 	// 准备数据
 	var loadData = map[string]interface{}{
-		"image" : data,
+		"image" : cid,
 	}
 	loadBytes, err := json.Marshal(loadData)
 	if err != nil {
