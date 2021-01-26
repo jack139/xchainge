@@ -5,6 +5,8 @@ go 1.15
 require (
 	github.com/Ferluci/fast-realip v1.0.0
 	github.com/fasthttp/router v1.3.4
+	github.com/ipfs/go-ipfs v0.7.0 // indirect
+	github.com/ipfs/go-ipfs-config v0.11.0 // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/cobra v1.1.1
 	github.com/tendermint/go-amino v0.16.0
