@@ -133,6 +133,12 @@
 | assetsLink:  | 资产id        | 区块高度  |
 
 
+### IPFS
+
+启动
+```
+nohup ipfs daemon --enable-namesys-pubsub > /tmp/ipfs.log 2>&1 &
+```
 
 ### 技术栈
 
@@ -151,7 +157,7 @@
 - [x] 用户认证，使用ed25519签名
 - [x] 数据使用curve25519加密
 - [x] 交易查询授权和响应
-- [ ] ipfs支持
+- [x] ipfs支持
 - [x] 应用层api
 - [ ] credit产生机制，产生方案记录在链上（app states），通过区块修改
 - [ ] 增加区块类型：系统区块，credit交易区块
