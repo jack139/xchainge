@@ -5,15 +5,14 @@
 ### 安装LevelDB
 ```
 yum -y install snappy-devel
-wget https://github.com/google/leveldb/archive/v1.20.tar.gz && \
-  tar -zxvf v1.20.tar.gz && \
+wget https://github.com/google/leveldb/archive/v1.20.tar.gz
+tar -zxvf v1.20.tar.gz && \
   cd leveldb-1.20/ && \
   make && \
   sudo cp -r out-static/lib* out-shared/lib* /usr/local/lib/ && \
   cd include/ && \
   sudo cp -r leveldb /usr/local/include/ && \
-  sudo ldconfig && \
-  rm -f v1.20.tar.gz
+  sudo ldconfig
 export LD_LIBRARY_PATH=/usr/local/lib
 ```
 
@@ -141,4 +140,42 @@ curl localhost:26657/validators
 
 ```shell
 curl localhost:26657/net_info
+```
+
+
+### 安装ipfs
+1. 第一个节点
+```shell
+./install.sh
+```
+查看ipfs id，修改bootstrap.txt内容里的id和ip
+
+2. 其他节点
+复制新的bootstrap.txt，然后执行 install.sh
+
+3. 在各个节点
+```shell
+./run.sh
+```
+
+4. 查看节点状态
+```
+ipfs swarm peers
+```
+
+5. 测试节点
+
+节点1
+```shell
+# echo 'ipfs1' > ipfs1.txt
+# ipfs add ipfs1.txt
+added QmZyTztEF1UfJ1Qw8HzaWpQcv98ogu4kfnKteUwav2gg6T ipfs1.txt
+ 6 B / 6 B [==========================] 100.00%
+```
+
+节点2
+```shell
+# ipfs get QmZyTztEF1UfJ1Qw8HzaWpQcv98ogu4kfnKteUwav2gg6T
+Saving file(s) to QmZyTztEF1UfJ1Qw8HzaWpQcv98ogu4kfnKteUwav2gg6T
+ 6 B / 6 B [==========================] 100.00% 0s
 ```

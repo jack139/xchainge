@@ -30,14 +30,14 @@ if __name__ == '__main__':
         'version'  : '1',
         'sign_type' : 'SHA256', 
         'data'     : {
-            'userkey'   : 'qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=',
-            'userkey_a' : 'qyBsXnVKKjvFNxHBRudc3tCp8t8ymqBSF1Ga8qlfqFs=',
-            'userkey_b' : 'j9cIgmm17x0aLApf0i20UR7Pj34Ua/JwyWOuBGgYIFg=',
+            'userkey'   : 'poCX4ig37Ljq4nTX6DjQlz9EgITtIhAONaok8PJ7fzw=',
+            'userkey_a' : 'poCX4ig37Ljq4nTX6DjQlz9EgITtIhAONaok8PJ7fzw=',
+            'userkey_b' : 'c4l1SkZiwkQsULUah6OPuei0LabubLxnni9tLM1T3Tk=',
             'assets_id' : '123',
-            'data'      : 'zzzzzxxxxxxx',
-            'user_name' : '测试1',
+            'data'      : 'zzzzzxxxxxxx', # img_data
+            'user_name' : '测试2',
             'user_type' : 'buyer',
-            'block_id'  : 'f90381eb-97b9-4a0c-aca3-777cceafdd08',
+            'block_id'  : '9681ddbe-3830-44d1-b8af-a41f73a1346a', # 85c2d455-755d-461b-89fc-8a9327f8223a
         }
     }
 
