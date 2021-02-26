@@ -72,7 +72,10 @@ if __name__ == '__main__':
     #url = host+'/api/query_by_assets'
     #url = host+'/api/biz_register'
     #url = host+'/api/biz_contract'
+    #url = host+'/api/biz_delivery'
+    #url = host+'/api/query_deals'
     url = host+'/api/query_block'
+    #url = host+'/api/query_raw_block'
 
     start_time = datetime.now()
     r = pool.urlopen('POST', url, body=body)
